@@ -31,3 +31,7 @@ jobs:
         uses: hacs/action@main
         with:
           category: integration
+          # During active dev, repository topics and final brand assets are
+          # intentionally allowed to lag behind backend work. beta/main stay
+          # strict, so promotion still requires both to be ready.
+          ignore: ${{ github.ref_name == 'dev' && 'brands topics' || '' }}
