@@ -6,7 +6,7 @@ from homeassistant.const import Platform
 
 DOMAIN = "device_maintenance"
 NAME = "Device Maintenance"
-VERSION = "0.1.0-dev.5"
+VERSION = "0.1.0-dev.6"
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BUTTON]
 
@@ -36,6 +36,10 @@ MAINTENANCE_ITEM_TYPES = [
     ITEM_TYPE_OTHER,
 ]
 
+INITIAL_ACTION_NOW = "now"
+INITIAL_ACTION_CUSTOM = "custom"
+INITIAL_ACTION_MODES = [INITIAL_ACTION_NOW, INITIAL_ACTION_CUSTOM]
+
 CONF_NAME = "name"
 CONF_STRATEGY = "strategy"
 CONF_SOURCE_ENTITY = "source_entity"
@@ -51,6 +55,8 @@ CONF_MIGRATION_SEED = "migration_seed"
 CONF_MAINTENANCE_ITEM_TYPE = "maintenance_item_type"
 CONF_MAINTENANCE_ITEM_QUANTITY = "maintenance_item_quantity"
 CONF_MAINTENANCE_ITEM_SPECIFICATION = "maintenance_item_specification"
+CONF_INITIAL_ACTION_MODE = "initial_action_mode"
+CONF_INITIAL_ACTION_DATETIME = "initial_action_datetime"
 
 DEFAULT_ACTION_LABEL = "Laddad"
 DEFAULT_HISTORY_SIZE = 5
