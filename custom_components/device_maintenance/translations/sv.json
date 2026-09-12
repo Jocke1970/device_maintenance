@@ -73,6 +73,20 @@
           "fallback_days": "Startintervall",
           "history_size": "Intervall att lära från"
         }
+      },
+      "initial_action": {
+        "title": "Senaste åtgärd",
+        "description": "Ange när den pågående underhållscykeln startade. Välj Nu om åtgärden precis utfördes, eller ange ett tidigare datum/tid om enheten redan har varit i drift ett tag.",
+        "data": {
+          "initial_action_mode": "Senaste åtgärd"
+        }
+      },
+      "initial_action_datetime": {
+        "title": "Ange senaste åtgärd",
+        "description": "Välj datum och tid för den senaste laddningen, bytet eller underhållsåtgärden. Tiden lagras internt i UTC men visas enligt Home Assistants tidszon.",
+        "data": {
+          "initial_action_datetime": "Datum och tid"
+        }
       }
     },
     "abort": {
@@ -81,7 +95,9 @@
       "legacy_tracker_unavailable": "Legacy-enheten är inte längre tillgänglig."
     },
     "error": {
-      "legacy_tracker_unavailable": "Legacy-enheten är inte längre tillgänglig."
+      "legacy_tracker_unavailable": "Legacy-enheten är inte längre tillgänglig.",
+      "invalid_initial_action": "Datumet/tiden kunde inte tolkas.",
+      "future_initial_action": "Senaste åtgärden kan inte ligga i framtiden."
     }
   },
   "options": {
@@ -120,6 +136,12 @@
         "blade": "Blad",
         "co2_cylinder": "CO₂-patron",
         "other": "Annat"
+      }
+    },
+    "initial_action_mode": {
+      "options": {
+        "now": "Nu",
+        "custom": "Ange datum/tid"
       }
     }
   }
