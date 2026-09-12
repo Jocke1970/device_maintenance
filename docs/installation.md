@@ -1,6 +1,6 @@
 # Installation
 
-Device Maintenance is currently in beta. `0.1.0-beta.1` is intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation.
+Device Maintenance is currently in beta. `0.1.0-beta.2` is intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation.
 
 ## Beta install
 
@@ -98,5 +98,7 @@ Max session delta: 1200 s
 ```
 
 The first beta was promoted only after the Oral-B tracker matched the legacy runtime across normal session accumulation, session reset, Home Assistant restart, maintenance baseline persistence, and short-cycle filtering.
+
+The second beta adds state-safe ordinary `elapsed` migration, structured maintenance-item metadata, explicit source-device linking, and initial last-action seeding for new elapsed trackers after real Home Assistant validation across restart and timezone handling.
 
 See [Beta notes](beta-notes.md), [Configuration](configuration.md), and [Migration plan](migration.md) for more detail.

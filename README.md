@@ -4,7 +4,7 @@
 
 A Home Assistant custom integration for self-learning device maintenance, runtime tracking, battery cycles, and service intervals.
 
-> **Status:** first beta released from the `beta` branch. `0.1.0-beta.1` is intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.6`.
+> **Status:** `0.1.0-beta.2` is the current pre-release on the `beta` branch, intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.6`.
 
 Device Maintenance is being rebuilt from a collection of YAML helpers, template sensors, scripts, and automations into a proper Home Assistant helper integration with persistent runtime state and a strategy-based backend.
 
@@ -26,7 +26,7 @@ Current goals:
 
 ## Current versions
 
-- beta: `0.1.0-beta.1`
+- beta: `0.1.0-beta.2`
 - dev: `0.1.0-dev.6`
 
 The current backend provides:
@@ -55,7 +55,7 @@ The first real legacy `elapsed` migration, Garmin Fenix 7 Pro Sapphire, has also
 | Strategy | Use case | Current status |
 | --- | --- | --- |
 | `session_runtime` | Source entity reports the duration of the current usage session | Beta |
-| `elapsed` | Track wall-clock time since the previous maintenance action | Beta; legacy import available on `dev` |
+| `elapsed` | Track wall-clock time since the previous maintenance action | Beta; legacy import available |
 | `cumulative_runtime` | Source exposes a monotonically increasing usage counter | Planned |
 | adapters | Specialized sources such as Garmin Gear or Garmin Index Sleep | Planned |
 
