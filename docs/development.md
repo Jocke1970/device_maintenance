@@ -68,7 +68,7 @@ Development versions use a suffix such as:
 0.1.0-dev.2
 ```
 
-Beta builds should use a pre-release identifier, for example:
+Beta builds use a pre-release identifier, for example:
 
 ```text
 0.1.0-beta.1
@@ -83,6 +83,8 @@ Stable releases use normal semantic versions:
 ```
 
 The manifest version and documented version must agree before promotion.
+
+The first beta promotion is `0.1.0-beta.1`. It was gated on a real Braun Oral-B parity test covering session accumulation, reset handling, restart persistence, maintenance baseline persistence, and short-cycle learning rejection.
 
 ## Validation
 
@@ -167,6 +169,7 @@ The documentation is part of the release surface.
 Update the relevant file when behavior changes:
 
 - `README.md` — project overview and current public status;
+- `docs/beta-notes.md` — current beta scope, verified behavior, and known limitations;
 - `docs/installation.md` — installation and update path;
 - `docs/configuration.md` — strategy and entity contract;
 - `docs/architecture.md` — backend design boundaries;
