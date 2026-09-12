@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
 import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlowResult, OptionsFlowWithReload
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.selector import (
+    DateTimeSelector,
     EntitySelector,
     EntitySelectorConfig,
     NumberSelector,
@@ -19,6 +22,7 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
     TextSelector,
 )
+from homeassistant.util import dt as dt_util
 from homeassistant.util import slugify
 
 from .const import (
@@ -27,6 +31,8 @@ from .const import (
     CONF_BATTERY_ENTITY,
     CONF_FALLBACK_INTERVAL_SECONDS,
     CONF_HISTORY_SIZE,
+    CONF_INITIAL_ACTION_DATETIME,
+    CONF_INITIAL_ACTION_MODE,
     CONF_LEGACY_ENTITY,
     CONF_LINKED_ENTITY,
     CONF_MAINTENANCE_ITEM_QUANTITY,
@@ -46,6 +52,9 @@ from .const import (
     DEFAULT_MAX_SESSION_SECONDS,
     DEFAULT_RUNTIME_FALLBACK_SECONDS,
     DOMAIN,
+    INITIAL_ACTION_CUSTOM,
+    INITIAL_ACTION_MODES,
+    INITIAL_ACTION_NOW,
     ITEM_TYPE_BUILT_IN_BATTERY,
     ITEM_TYPE_OTHER,
     ITEM_TYPE_REPLACEABLE_BATTERY,
@@ -54,6 +63,7 @@ from .const import (
     STRATEGY_SESSION_RUNTIME,
 )
 from .migration import LegacyElapsedCandidate, discover_legacy_elapsed_candidates
+from .models import RuntimeState
 
 
 class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -65,6 +75,8 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Initialize the flow."""
         self._base: dict[str, Any] = {}
         self._legacy_candidate: LegacyElapsedCandidate | None = None
+        self._pending_entry_data: dict[str, Any] = {}
+        self._pending_entry_options: dict[str, Any] = {}
 
     async def async_step_user(
         self,
@@ -382,11 +394,11 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Configure a wall-clock tracker."""
         if user_input is not None:
-            data = {
+            self._pending_entry_data = {
                 CONF_NAME: self._base[CONF_NAME],
                 CONF_STRATEGY: STRATEGY_ELAPSED,
             }
-            options = {
+            self._pending_entry_options = {
                 **_item_options(self._base),
                 CONF_BATTERY_ENTITY: user_input.get(CONF_BATTERY_ENTITY),
                 CONF_ACTION_LABEL: user_input[CONF_ACTION_LABEL],
@@ -394,11 +406,7 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_HISTORY_SIZE: int(user_input[CONF_HISTORY_SIZE]),
                 CONF_PICTURE_KEY: slugify(self._base[CONF_NAME]),
             }
-            return self.async_create_entry(
-                title=self._base[CONF_NAME],
-                data=data,
-                options=options,
-            )
+            return await self.async_step_initial_action()
 
         schema = vol.Schema(
             {
@@ -432,6 +440,77 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }
         )
         return self.async_show_form(step_id="elapsed", data_schema=schema)
+
+    async def async_step_initial_action(
+        self,
+        user_input: dict[str, Any] | None = None,
+    ) -> ConfigFlowResult:
+        """Choose when the current elapsed maintenance cycle started."""
+        if user_input is not None:
+            mode = str(user_input[CONF_INITIAL_ACTION_MODE])
+            if mode == INITIAL_ACTION_CUSTOM:
+                return await self.async_step_initial_action_datetime()
+            return self._create_pending_elapsed_entry()
+
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    CONF_INITIAL_ACTION_MODE,
+                    default=INITIAL_ACTION_NOW,
+                ): SelectSelector(
+                    SelectSelectorConfig(
+                        options=INITIAL_ACTION_MODES,
+                        mode=SelectSelectorMode.DROPDOWN,
+                        translation_key="initial_action_mode",
+                    )
+                )
+            }
+        )
+        return self.async_show_form(step_id="initial_action", data_schema=schema)
+
+    async def async_step_initial_action_datetime(
+        self,
+        user_input: dict[str, Any] | None = None,
+    ) -> ConfigFlowResult:
+        """Seed an elapsed tracker with a known previous action time."""
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            normalized = _normalize_initial_action_datetime(
+                self.hass,
+                user_input[CONF_INITIAL_ACTION_DATETIME],
+            )
+            if normalized is None:
+                errors[CONF_INITIAL_ACTION_DATETIME] = "invalid_initial_action"
+            else:
+                parsed = dt_util.parse_datetime(normalized)
+                if parsed is None:
+                    errors[CONF_INITIAL_ACTION_DATETIME] = "invalid_initial_action"
+                elif parsed > dt_util.utcnow():
+                    errors[CONF_INITIAL_ACTION_DATETIME] = "future_initial_action"
+                else:
+                    self._pending_entry_data[CONF_MIGRATION_SEED] = RuntimeState(
+                        last_action=normalized
+                    ).as_dict()
+                    return self._create_pending_elapsed_entry()
+
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_INITIAL_ACTION_DATETIME): DateTimeSelector(),
+            }
+        )
+        return self.async_show_form(
+            step_id="initial_action_datetime",
+            data_schema=schema,
+            errors=errors,
+        )
+
+    def _create_pending_elapsed_entry(self) -> ConfigFlowResult:
+        """Create the elapsed config entry assembled by the previous steps."""
+        return self.async_create_entry(
+            title=str(self._pending_entry_data[CONF_NAME]),
+            data=self._pending_entry_data,
+            options=self._pending_entry_options,
+        )
 
     @staticmethod
     def async_get_options_flow(
@@ -675,6 +754,26 @@ def _infer_item_type_from_action(action_label: Any) -> str:
     if "ladd" in normalized or "charg" in normalized:
         return "built_in_battery"
     return ITEM_TYPE_OTHER
+
+
+def _normalize_initial_action_datetime(
+    hass: HomeAssistant,
+    value: Any,
+) -> str | None:
+    """Normalize a config-flow datetime to a timezone-aware UTC ISO string."""
+    parsed: datetime | None
+    if isinstance(value, datetime):
+        parsed = value
+    else:
+        parsed = dt_util.parse_datetime(str(value))
+    if parsed is None:
+        return None
+    if parsed.tzinfo is None:
+        timezone = dt_util.get_time_zone(hass.config.time_zone)
+        if timezone is None:
+            return None
+        parsed = parsed.replace(tzinfo=timezone)
+    return dt_util.as_utc(parsed).isoformat()
 
 
 def _item_summary(
