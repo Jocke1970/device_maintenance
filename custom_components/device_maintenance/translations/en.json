@@ -73,6 +73,20 @@
           "fallback_days": "Starting interval",
           "history_size": "Intervals to learn from"
         }
+      },
+      "initial_action": {
+        "title": "Last maintenance action",
+        "description": "Choose when the current maintenance cycle started. Use Now if the action was just performed, or enter an earlier date/time if the device has already been in use for a while.",
+        "data": {
+          "initial_action_mode": "Last maintenance action"
+        }
+      },
+      "initial_action_datetime": {
+        "title": "Enter last maintenance action",
+        "description": "Choose the date and time of the last charge, replacement, or maintenance action. The value is stored internally in UTC and displayed using Home Assistant's timezone.",
+        "data": {
+          "initial_action_datetime": "Date and time"
+        }
       }
     },
     "abort": {
@@ -81,7 +95,9 @@
       "legacy_tracker_unavailable": "The legacy tracker is no longer available."
     },
     "error": {
-      "legacy_tracker_unavailable": "The legacy tracker is no longer available."
+      "legacy_tracker_unavailable": "The legacy tracker is no longer available.",
+      "invalid_initial_action": "The date/time could not be parsed.",
+      "future_initial_action": "The last maintenance action cannot be in the future."
     }
   },
   "options": {
@@ -120,6 +136,12 @@
         "blade": "Blade",
         "co2_cylinder": "CO₂ cylinder",
         "other": "Other"
+      }
+    },
+    "initial_action_mode": {
+      "options": {
+        "now": "Now",
+        "custom": "Enter date/time"
       }
     }
   }
