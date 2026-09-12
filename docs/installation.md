@@ -1,8 +1,8 @@
 # Installation
 
-Device Maintenance is currently in early development. Until the first `beta` or stable release is promoted, the `dev` branch should only be installed for deliberate testing.
+Device Maintenance is currently in beta. `0.1.0-beta.1` is intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation.
 
-## Development install
+## Beta install
 
 The integration lives in:
 
@@ -10,13 +10,13 @@ The integration lives in:
 custom_components/device_maintenance/
 ```
 
-A simple test install from the Home Assistant terminal is:
+Install the current beta from the Home Assistant terminal:
 
 ```bash
 cd /config
 rm -rf /tmp/device_maintenance
 
-git clone --depth 1 --branch dev \
+git clone --depth 1 --branch beta \
   https://github.com/Jocke1970/device_maintenance.git \
   /tmp/device_maintenance
 
@@ -42,23 +42,33 @@ If Device Maintenance does not appear in the integration picker, verify that thi
 
 and check the Home Assistant log for import or manifest errors.
 
-## Updating a development install
+## Updating a beta install
 
-Repeat the development install command above, then restart Home Assistant. The existing config entries and runtime state are stored by Home Assistant and are not part of the copied Python package.
+Repeat the beta installation command above, then restart Home Assistant. Existing config entries and runtime state are stored by Home Assistant and are not part of the copied Python package.
 
-During early development, storage and config schemas may still change. Back up Home Assistant before testing a newer `dev` revision against important state.
+Back up Home Assistant before testing a newer beta against important state.
+
+## Development install
+
+For active development, replace `--branch beta` with:
+
+```text
+--branch dev
+```
+
+The `dev` branch may contain incomplete work and should only be used when deliberately testing the next change before promotion to beta.
 
 ## HACS
 
-The repository already contains `hacs.json` and is validated in CI, but the integration is not yet released from `main`.
+The repository contains `hacs.json` and is validated in CI. Normal HACS installation is reserved for the stable `main` release path.
 
-For now, do not use the default branch as a normal HACS installation source. The intended progression is:
+The intended progression is:
 
 ```text
 dev → beta → main
 ```
 
-Once a release is promoted to `main`, HACS becomes the normal installation target.
+Until a stable release is promoted to `main`, use the explicit `beta` or `dev` branch installation above so the tested branch is unambiguous.
 
 ## Safe testing alongside the legacy system
 
@@ -87,4 +97,6 @@ History size: 5
 Max session delta: 1200 s
 ```
 
-See [Configuration](configuration.md) for strategy details and [Migration plan](migration.md) for the full rollout order.
+The first beta was promoted only after the Oral-B tracker matched the legacy runtime across normal session accumulation, session reset, Home Assistant restart, maintenance baseline persistence, and short-cycle filtering.
+
+See [Beta notes](beta-notes.md), [Configuration](configuration.md), and [Migration plan](migration.md) for more detail.
