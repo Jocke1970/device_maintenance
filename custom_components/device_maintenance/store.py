@@ -23,6 +23,10 @@ class DeviceMaintenanceStore:
         """Load persistent state."""
         self._data = await self._store.async_load() or {}
 
+    def has_state(self, entry_id: str) -> bool:
+        """Return whether persistent state already exists for a config entry."""
+        return entry_id in self._data
+
     def state_for(self, entry_id: str) -> RuntimeState:
         """Return the state for one config entry."""
         return RuntimeState.from_dict(self._data.get(entry_id))
@@ -32,6 +36,11 @@ class DeviceMaintenanceStore:
         """Update one entry and coalesce disk writes."""
         self._data[entry_id] = state.as_dict()
         self._store.async_delay_save(lambda: self._data, STORAGE_SAVE_DELAY)
+
+    async def async_import_state(self, entry_id: str, state: RuntimeState) -> None:
+        """Persist imported state immediately before a migrated tracker starts."""
+        self._data[entry_id] = state.as_dict()
+        await self._store.async_save(self._data)
 
     async def async_remove_entry(self, entry_id: str) -> None:
         """Remove persistent state for one config entry."""
