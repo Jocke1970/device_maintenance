@@ -2,12 +2,31 @@
   "config": {
     "step": {
       "user": {
+        "title": "Device Maintenance",
+        "description": "Skapa en ny underhållsenhet eller importera en kompatibel legacy-enhet.",
+        "menu_options": {
+          "create": "Skapa ny enhet",
+          "legacy_import": "Importera legacy-enhet"
+        }
+      },
+      "create": {
         "title": "Lägg till underhållsenhet",
         "description": "Välj namn och hur användningen ska mätas.",
         "data": {
           "name": "Namn",
           "strategy": "Mätmetod"
         }
+      },
+      "legacy_import": {
+        "title": "Importera legacy-enhet",
+        "description": "Välj en kompatibel elapsed-enhet. Legacy-konfigurationen lämnas orörd.",
+        "data": {
+          "legacy_entity": "Legacy-enhet"
+        }
+      },
+      "legacy_preview": {
+        "title": "Förhandsgranska import",
+        "description": "**{name}**\n\nLegacy-sensor: `{entity}`\n\nSenaste åtgärd: `{last_action}`\n\nHistorikposter: {samples}\n\nStartintervall: {fallback_days} dagar\n\nVarningar: {warnings}\n\nFortsätt för att skapa den nya enheten och importera state. Legacy-enheten raderas eller ändras inte."
       },
       "session_runtime": {
         "title": "Sessionstid",
@@ -31,6 +50,14 @@
           "history_size": "Intervall att lära från"
         }
       }
+    },
+    "abort": {
+      "no_legacy_trackers": "Inga kompatibla legacy elapsed-enheter hittades.",
+      "already_configured": "Den här legacy-enheten är redan importerad.",
+      "legacy_tracker_unavailable": "Legacy-enheten är inte längre tillgänglig."
+    },
+    "error": {
+      "legacy_tracker_unavailable": "Legacy-enheten är inte längre tillgänglig."
     }
   },
   "options": {
