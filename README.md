@@ -4,7 +4,7 @@
 
 A Home Assistant custom integration for self-learning device maintenance, runtime tracking, battery cycles, and service intervals.
 
-> **Status:** first beta released from the `beta` branch. `0.1.0-beta.1` is intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.5`.
+> **Status:** first beta released from the `beta` branch. `0.1.0-beta.1` is intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.6`.
 
 Device Maintenance is being rebuilt from a collection of YAML helpers, template sensors, scripts, and automations into a proper Home Assistant helper integration with persistent runtime state and a strategy-based backend.
 
@@ -27,7 +27,7 @@ Current goals:
 ## Current versions
 
 - beta: `0.1.0-beta.1`
-- dev: `0.1.0-dev.5`
+- dev: `0.1.0-dev.6`
 
 The current backend provides:
 
@@ -37,6 +37,7 @@ The current backend provides:
 - one native action button per tracker;
 - structured metadata for built-in batteries, replaceable batteries, filters, cartridges/refills, blades, CO₂ cylinders, and other maintenance items;
 - optional explicit linking to a physical Home Assistant device through an entity;
+- an explicit initial last-action choice for new `elapsed` trackers (`Now` or a known date/time);
 - battery metadata support;
 - adaptive interval learning from recent completed cycles;
 - `session_runtime` and `elapsed` strategies;
@@ -73,6 +74,8 @@ A tracker describes both **how the interval is measured** and **what is actually
 - another custom replacement item.
 
 The optional battery percentage sensor is separate metadata. An `elapsed` tracker can also be explicitly linked to a physical Home Assistant device through any entity belonging to that device.
+
+New `elapsed` trackers also ask when the current maintenance cycle started. Choose **Now** when the action has just been performed, or enter the known previous action date/time so a tracker does not incorrectly start at zero age.
 
 ## How learning works
 
