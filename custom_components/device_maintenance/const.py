@@ -6,7 +6,7 @@ from homeassistant.const import Platform
 
 DOMAIN = "device_maintenance"
 NAME = "Device Maintenance"
-VERSION = "0.1.0-dev.3"
+VERSION = "0.1.0-dev.4"
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BUTTON]
 
@@ -28,6 +28,8 @@ CONF_FALLBACK_INTERVAL_SECONDS = "fallback_interval_seconds"
 CONF_HISTORY_SIZE = "history_size"
 CONF_MAX_SESSION_SECONDS = "max_session_seconds"
 CONF_PICTURE_KEY = "picture_key"
+CONF_LEGACY_ENTITY = "legacy_entity"
+CONF_MIGRATION_SEED = "migration_seed"
 
 DEFAULT_ACTION_LABEL = "Laddad"
 DEFAULT_HISTORY_SIZE = 5
