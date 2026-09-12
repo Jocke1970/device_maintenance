@@ -2,12 +2,31 @@
   "config": {
     "step": {
       "user": {
+        "title": "Device Maintenance",
+        "description": "Create a new maintenance tracker or import a compatible legacy tracker.",
+        "menu_options": {
+          "create": "Create new tracker",
+          "legacy_import": "Import legacy tracker"
+        }
+      },
+      "create": {
         "title": "Add maintenance tracker",
         "description": "Choose a name and how usage should be measured.",
         "data": {
           "name": "Name",
           "strategy": "Tracking method"
         }
+      },
+      "legacy_import": {
+        "title": "Import legacy tracker",
+        "description": "Choose a compatible elapsed tracker. The legacy configuration is left untouched.",
+        "data": {
+          "legacy_entity": "Legacy tracker"
+        }
+      },
+      "legacy_preview": {
+        "title": "Preview import",
+        "description": "**{name}**\n\nLegacy sensor: `{entity}`\n\nLast action: `{last_action}`\n\nHistory samples: {samples}\n\nStarting interval: {fallback_days} days\n\nWarnings: {warnings}\n\nContinue to create the new tracker and import its state. The legacy tracker is not deleted or modified."
       },
       "session_runtime": {
         "title": "Session runtime",
@@ -31,6 +50,14 @@
           "history_size": "Intervals to learn from"
         }
       }
+    },
+    "abort": {
+      "no_legacy_trackers": "No compatible legacy elapsed trackers were found.",
+      "already_configured": "This legacy tracker has already been imported.",
+      "legacy_tracker_unavailable": "The legacy tracker is no longer available."
+    },
+    "error": {
+      "legacy_tracker_unavailable": "The legacy tracker is no longer available."
     }
   },
   "options": {
