@@ -21,7 +21,11 @@ from .const import (
     DEFAULT_ACTION_LABEL,
     DEFAULT_MAINTENANCE_ITEM_QUANTITY,
     DEFAULT_MAINTENANCE_ITEM_TYPE,
+    ITEM_TYPE_BLADE,
     ITEM_TYPE_BUILT_IN_BATTERY,
+    ITEM_TYPE_CARTRIDGE,
+    ITEM_TYPE_CO2_CYLINDER,
+    ITEM_TYPE_FILTER,
     ITEM_TYPE_REPLACEABLE_BATTERY,
 )
 from .models import MaintenanceSnapshot, RuntimeState
@@ -88,12 +92,10 @@ class DeviceMaintenanceManager:
     @property
     def maintenance_item_type(self) -> str:
         """Return the configured maintenance or replacement item type."""
-        return str(
-            self.entry.options.get(
-                CONF_MAINTENANCE_ITEM_TYPE,
-                DEFAULT_MAINTENANCE_ITEM_TYPE,
-            )
-        )
+        configured = self.entry.options.get(CONF_MAINTENANCE_ITEM_TYPE)
+        if configured:
+            return str(configured)
+        return _infer_item_type_from_action(self.action_label)
 
     @property
     def maintenance_item_quantity(self) -> int:
@@ -222,3 +224,21 @@ class DeviceMaintenanceManager:
         """Notify entities after battery/source metadata changes."""
         for listener in tuple(self._listeners):
             listener()
+
+
+def _infer_item_type_from_action(action_label: str) -> str:
+    """Infer metadata for entries created before maintenance-item fields existed."""
+    normalized = action_label.casefold()
+    if "blad" in normalized or "blade" in normalized:
+        return ITEM_TYPE_BLADE
+    if "kolsyre" in normalized or "co2" in normalized or "co₂" in normalized:
+        return ITEM_TYPE_CO2_CYLINDER
+    if "filter" in normalized:
+        return ITEM_TYPE_FILTER
+    if "patron" in normalized or "refill" in normalized:
+        return ITEM_TYPE_CARTRIDGE
+    if "batteri" in normalized or "battery" in normalized:
+        return ITEM_TYPE_REPLACEABLE_BATTERY
+    if "ladd" in normalized or "charg" in normalized:
+        return ITEM_TYPE_BUILT_IN_BATTERY
+    return DEFAULT_MAINTENANCE_ITEM_TYPE
