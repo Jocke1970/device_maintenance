@@ -11,10 +11,34 @@
       },
       "create": {
         "title": "Add maintenance tracker",
-        "description": "Choose a name and how usage should be measured.",
+        "description": "Choose a name and how the interval should be measured.",
         "data": {
           "name": "Name",
           "strategy": "Tracking method"
+        }
+      },
+      "maintenance_item": {
+        "title": "What is maintained or replaced?",
+        "description": "Describe the maintenance/replacement item itself. A battery percentage sensor is separate and selected later. You can also link the tracker to a physical Home Assistant device through any entity.",
+        "data": {
+          "maintenance_item_type": "Battery / replacement item",
+          "linked_entity": "Link to physical device through entity (optional)"
+        }
+      },
+      "battery_details": {
+        "title": "Replaceable battery",
+        "description": "Enter how many batteries are replaced together and which battery type is used.",
+        "data": {
+          "maintenance_item_quantity": "Number of batteries",
+          "maintenance_item_specification": "Battery type"
+        }
+      },
+      "item_details": {
+        "title": "Replacement item",
+        "description": "Enter the quantity and, when useful, a type/model/specification for the filter, cartridge, blade, or other item.",
+        "data": {
+          "maintenance_item_quantity": "Quantity",
+          "maintenance_item_specification": "Type / model / specification"
         }
       },
       "legacy_import": {
@@ -26,14 +50,14 @@
       },
       "legacy_preview": {
         "title": "Preview import",
-        "description": "**{name}**\n\nLegacy sensor: `{entity}`\n\nLast action: `{last_action}`\n\nHistory samples: {samples}\n\nStarting interval: {fallback_days} days\n\nWarnings: {warnings}\n\nContinue to create the new tracker and import its state. The legacy tracker is not deleted or modified."
+        "description": "**{name}**\n\nLegacy sensor: `{entity}`\n\nLast action: `{last_action}`\n\nHistory samples: {samples}\n\nStarting interval: {fallback_days} days\n\nMaintenance/replacement item: {item_summary}\n\nWarnings: {warnings}\n\nContinue to create the new tracker and import its state. The legacy tracker is not deleted or modified."
       },
       "session_runtime": {
         "title": "Session runtime",
         "description": "Accumulate positive changes from a sensor that reports runtime for the current session.",
         "data": {
           "source_entity": "Session runtime sensor",
-          "battery_entity": "Battery sensor",
+          "battery_entity": "Battery sensor (optional)",
           "action_label": "Maintenance action",
           "fallback_minutes": "Starting interval",
           "history_size": "Intervals to learn from",
@@ -44,7 +68,7 @@
         "title": "Elapsed time",
         "description": "Track wall-clock time between maintenance actions.",
         "data": {
-          "battery_entity": "Battery sensor",
+          "battery_entity": "Battery sensor (optional)",
           "action_label": "Maintenance action",
           "fallback_days": "Starting interval",
           "history_size": "Intervals to learn from"
@@ -64,7 +88,12 @@
     "step": {
       "init": {
         "title": "Device Maintenance settings",
+        "description": "Maintenance-item metadata can be edited without resetting learned history. Quantity and specification are ignored for a built-in battery.",
         "data": {
+          "maintenance_item_type": "Battery / replacement item",
+          "maintenance_item_quantity": "Quantity",
+          "maintenance_item_specification": "Type / model / specification",
+          "linked_entity": "Link to physical device through entity",
           "battery_entity": "Battery sensor",
           "action_label": "Maintenance action",
           "fallback_minutes": "Starting interval",
@@ -80,6 +109,17 @@
       "options": {
         "session_runtime": "Session runtime",
         "elapsed": "Elapsed time"
+      }
+    },
+    "maintenance_item_type": {
+      "options": {
+        "built_in_battery": "Built-in battery",
+        "replaceable_battery": "Replaceable battery",
+        "filter": "Filter",
+        "cartridge": "Cartridge / refill",
+        "blade": "Blade",
+        "co2_cylinder": "CO₂ cylinder",
+        "other": "Other"
       }
     }
   }

@@ -11,10 +11,34 @@
       },
       "create": {
         "title": "Lägg till underhållsenhet",
-        "description": "Välj namn och hur användningen ska mätas.",
+        "description": "Välj namn och hur intervallet ska mätas.",
         "data": {
           "name": "Namn",
           "strategy": "Mätmetod"
+        }
+      },
+      "maintenance_item": {
+        "title": "Vad underhålls eller byts?",
+        "description": "Beskriv själva underhålls-/utbytesdelen. En batterisensor är separat och väljs senare. Du kan också länka trackern till en fysisk Home Assistant-enhet via valfri entitet.",
+        "data": {
+          "maintenance_item_type": "Batteri / utbytesenhet",
+          "linked_entity": "Koppla till fysisk enhet via entitet (valfri)"
+        }
+      },
+      "battery_details": {
+        "title": "Utbytbart batteri",
+        "description": "Ange hur många batterier som byts tillsammans och vilken batterityp som används.",
+        "data": {
+          "maintenance_item_quantity": "Antal batterier",
+          "maintenance_item_specification": "Batterityp"
+        }
+      },
+      "item_details": {
+        "title": "Utbytesdel",
+        "description": "Ange antal och, om det är relevant, typ/modell/specifikation för filter, patron, blad eller annan utbytesdel.",
+        "data": {
+          "maintenance_item_quantity": "Antal",
+          "maintenance_item_specification": "Typ / modell / specifikation"
         }
       },
       "legacy_import": {
@@ -26,14 +50,14 @@
       },
       "legacy_preview": {
         "title": "Förhandsgranska import",
-        "description": "**{name}**\n\nLegacy-sensor: `{entity}`\n\nSenaste åtgärd: `{last_action}`\n\nHistorikposter: {samples}\n\nStartintervall: {fallback_days} dagar\n\nVarningar: {warnings}\n\nFortsätt för att skapa den nya enheten och importera state. Legacy-enheten raderas eller ändras inte."
+        "description": "**{name}**\n\nLegacy-sensor: `{entity}`\n\nSenaste åtgärd: `{last_action}`\n\nHistorikposter: {samples}\n\nStartintervall: {fallback_days} dagar\n\nUnderhålls-/utbytesdel: {item_summary}\n\nVarningar: {warnings}\n\nFortsätt för att skapa den nya enheten och importera state. Legacy-enheten raderas eller ändras inte."
       },
       "session_runtime": {
         "title": "Sessionstid",
         "description": "Summerar positiva förändringar från en sensor som visar drifttid för aktuell session.",
         "data": {
           "source_entity": "Sensor för sessionstid",
-          "battery_entity": "Batterisensor",
+          "battery_entity": "Batterisensor (valfri)",
           "action_label": "Underhållsåtgärd",
           "fallback_minutes": "Startintervall",
           "history_size": "Intervall att lära från",
@@ -44,7 +68,7 @@
         "title": "Tid sedan åtgärd",
         "description": "Mäter vanlig kalendertid mellan underhållsåtgärder.",
         "data": {
-          "battery_entity": "Batterisensor",
+          "battery_entity": "Batterisensor (valfri)",
           "action_label": "Underhållsåtgärd",
           "fallback_days": "Startintervall",
           "history_size": "Intervall att lära från"
@@ -64,7 +88,12 @@
     "step": {
       "init": {
         "title": "Inställningar för Device Maintenance",
+        "description": "Metadata om underhållsdelen kan ändras utan att nollställa inlärd historik. För inbyggt batteri ignoreras antal och specifikation.",
         "data": {
+          "maintenance_item_type": "Batteri / utbytesenhet",
+          "maintenance_item_quantity": "Antal",
+          "maintenance_item_specification": "Typ / modell / specifikation",
+          "linked_entity": "Koppla till fysisk enhet via entitet",
           "battery_entity": "Batterisensor",
           "action_label": "Underhållsåtgärd",
           "fallback_minutes": "Startintervall",
@@ -80,6 +109,17 @@
       "options": {
         "session_runtime": "Sessionstid",
         "elapsed": "Tid sedan åtgärd"
+      }
+    },
+    "maintenance_item_type": {
+      "options": {
+        "built_in_battery": "Inbyggt batteri",
+        "replaceable_battery": "Utbytbart batteri",
+        "filter": "Filter",
+        "cartridge": "Patron / refill",
+        "blade": "Blad",
+        "co2_cylinder": "CO₂-patron",
+        "other": "Annat"
       }
     }
   }

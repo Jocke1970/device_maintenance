@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+import re
 from typing import Any
 
 from homeassistant.core import HomeAssistant, State
@@ -16,10 +17,18 @@ from .const import (
     DEFAULT_ELAPSED_FALLBACK_SECONDS,
     DEFAULT_HISTORY_SIZE,
     DOMAIN,
+    ITEM_TYPE_BLADE,
+    ITEM_TYPE_BUILT_IN_BATTERY,
+    ITEM_TYPE_CARTRIDGE,
+    ITEM_TYPE_CO2_CYLINDER,
+    ITEM_TYPE_FILTER,
+    ITEM_TYPE_OTHER,
+    ITEM_TYPE_REPLACEABLE_BATTERY,
 )
 from .models import RuntimeState
 
 LEGACY_SENSOR_PREFIX = "sensor.device_maintenance_"
+_BATTERY_SPEC_PATTERN = re.compile(r"^\s*(\d+)\s*[×xX*]\s*(.+?)\s*$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,6 +43,10 @@ class LegacyElapsedCandidate:
     action_label: str
     fallback_interval_seconds: float
     runtime_state: RuntimeState
+    maintenance_item_type: str = ITEM_TYPE_OTHER
+    maintenance_item_quantity: int = 1
+    maintenance_item_specification: str = ""
+    linked_entity: str | None = None
     warnings: tuple[str, ...] = ()
 
     @property
@@ -44,7 +57,7 @@ class LegacyElapsedCandidate:
     @property
     def warning_text(self) -> str:
         """Return warnings formatted for config-flow preview."""
-        return "; ".join(self.warnings) if self.warnings else "None"
+        return "; ".join(self.warnings) if self.warnings else "—"
 
 
 def discover_legacy_elapsed_candidates(
@@ -86,6 +99,11 @@ def discover_legacy_elapsed_candidates(
 
         battery_entity = _string_attr(state, "battery_entity")
         action_label = _string_attr(state, "action_label") or DEFAULT_ACTION_LABEL
+        item_type, item_quantity, item_specification = _maintenance_item_metadata(
+            state,
+            action_label,
+        )
+        linked_entity = _string_attr(state, "linked_entity") or battery_entity
 
         candidates.append(
             LegacyElapsedCandidate(
@@ -100,6 +118,10 @@ def discover_legacy_elapsed_candidates(
                     last_action=last_action,
                     history_seconds=history_seconds,
                 ),
+                maintenance_item_type=item_type,
+                maintenance_item_quantity=item_quantity,
+                maintenance_item_specification=item_specification,
+                linked_entity=linked_entity,
                 warnings=tuple(warnings),
             )
         )
@@ -126,6 +148,57 @@ def _string_attr(state: State, key: str) -> str | None:
         return None
     text = str(value).strip()
     return text or None
+
+
+def _maintenance_item_metadata(
+    state: State,
+    action_label: str,
+) -> tuple[str, int, str]:
+    """Infer replacement-item metadata from the existing legacy tracker."""
+    explicit_type = _string_attr(state, "maintenance_item_type")
+    explicit_quantity = state.attributes.get("maintenance_item_quantity")
+    explicit_specification = _string_attr(state, "maintenance_item_specification") or ""
+
+    if explicit_type:
+        quantity = _positive_int(explicit_quantity, 1)
+        return explicit_type, quantity, explicit_specification
+
+    battery_type = _string_attr(state, "battery_type")
+    if battery_type:
+        quantity, specification = _parse_battery_type(battery_type)
+        return ITEM_TYPE_REPLACEABLE_BATTERY, quantity, specification
+
+    normalized = f"{state.name} {action_label}".casefold()
+    if "blad" in normalized or "blade" in normalized:
+        return ITEM_TYPE_BLADE, 1, ""
+    if "kolsyre" in normalized or "co2" in normalized or "co₂" in normalized:
+        return ITEM_TYPE_CO2_CYLINDER, 1, ""
+    if "filter" in normalized:
+        return ITEM_TYPE_FILTER, 1, ""
+    if "patron" in normalized or "refill" in normalized:
+        return ITEM_TYPE_CARTRIDGE, 1, ""
+    if "batteri" in normalized or "battery" in normalized:
+        return ITEM_TYPE_REPLACEABLE_BATTERY, 1, ""
+    if "ladd" in normalized or "charg" in normalized:
+        return ITEM_TYPE_BUILT_IN_BATTERY, 1, ""
+    return ITEM_TYPE_OTHER, 1, ""
+
+
+def _parse_battery_type(value: str) -> tuple[int, str]:
+    """Parse legacy values such as '2 × AA' or '1xCR2032'."""
+    match = _BATTERY_SPEC_PATTERN.match(value)
+    if match:
+        return max(1, int(match.group(1))), match.group(2).strip()
+    return 1, value.strip()
+
+
+def _positive_int(value: Any, fallback: int) -> int:
+    """Return a positive integer or fallback."""
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return fallback
+    return parsed if parsed > 0 else fallback
 
 
 def _last_action(

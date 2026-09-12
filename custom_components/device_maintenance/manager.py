@@ -9,11 +9,20 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.event import async_track_state_change_event
 
 from .const import (
+    ACTION_ICON_BY_ITEM_TYPE,
     CONF_ACTION_LABEL,
     CONF_BATTERY_ENTITY,
+    CONF_LINKED_ENTITY,
+    CONF_MAINTENANCE_ITEM_QUANTITY,
+    CONF_MAINTENANCE_ITEM_SPECIFICATION,
+    CONF_MAINTENANCE_ITEM_TYPE,
     CONF_NAME,
     CONF_PICTURE_KEY,
     DEFAULT_ACTION_LABEL,
+    DEFAULT_MAINTENANCE_ITEM_QUANTITY,
+    DEFAULT_MAINTENANCE_ITEM_TYPE,
+    ITEM_TYPE_BUILT_IN_BATTERY,
+    ITEM_TYPE_REPLACEABLE_BATTERY,
 )
 from .models import MaintenanceSnapshot, RuntimeState
 from .store import DeviceMaintenanceStore
@@ -54,14 +63,87 @@ class DeviceMaintenanceManager:
         return str(self.entry.options.get(CONF_ACTION_LABEL, DEFAULT_ACTION_LABEL))
 
     @property
+    def action_icon(self) -> str:
+        """Return an icon matching the configured maintenance item."""
+        return ACTION_ICON_BY_ITEM_TYPE.get(
+            self.maintenance_item_type,
+            ACTION_ICON_BY_ITEM_TYPE[DEFAULT_MAINTENANCE_ITEM_TYPE],
+        )
+
+    @property
     def picture_key(self) -> str:
         """Return optional frontend picture key."""
         return str(self.entry.options.get(CONF_PICTURE_KEY, ""))
 
     @property
     def battery_entity_id(self) -> str | None:
-        """Return optional battery entity."""
+        """Return optional battery percentage entity."""
         return self.entry.options.get(CONF_BATTERY_ENTITY)
+
+    @property
+    def explicit_linked_entity_id(self) -> str | None:
+        """Return optional entity explicitly selected for device linking."""
+        return self.entry.options.get(CONF_LINKED_ENTITY)
+
+    @property
+    def maintenance_item_type(self) -> str:
+        """Return the configured maintenance or replacement item type."""
+        return str(
+            self.entry.options.get(
+                CONF_MAINTENANCE_ITEM_TYPE,
+                DEFAULT_MAINTENANCE_ITEM_TYPE,
+            )
+        )
+
+    @property
+    def maintenance_item_quantity(self) -> int:
+        """Return the configured replacement-item quantity."""
+        if self.maintenance_item_type == ITEM_TYPE_BUILT_IN_BATTERY:
+            return 1
+        try:
+            return max(
+                1,
+                int(
+                    self.entry.options.get(
+                        CONF_MAINTENANCE_ITEM_QUANTITY,
+                        DEFAULT_MAINTENANCE_ITEM_QUANTITY,
+                    )
+                ),
+            )
+        except (TypeError, ValueError):
+            return DEFAULT_MAINTENANCE_ITEM_QUANTITY
+
+    @property
+    def maintenance_item_specification(self) -> str:
+        """Return optional battery type, model, or item specification."""
+        if self.maintenance_item_type == ITEM_TYPE_BUILT_IN_BATTERY:
+            return ""
+        return str(
+            self.entry.options.get(CONF_MAINTENANCE_ITEM_SPECIFICATION, "") or ""
+        ).strip()
+
+    @property
+    def maintenance_item_summary(self) -> str:
+        """Return a compact language-neutral maintenance-item summary."""
+        item_type = self.maintenance_item_type
+        if item_type == ITEM_TYPE_BUILT_IN_BATTERY:
+            return item_type
+
+        specification = self.maintenance_item_specification
+        quantity = self.maintenance_item_quantity
+        if specification:
+            return f"{quantity} × {specification}"
+        return f"{quantity} × {item_type}"
+
+    @property
+    def legacy_battery_type(self) -> str | None:
+        """Return old card-compatible battery_type metadata when relevant."""
+        if self.maintenance_item_type != ITEM_TYPE_REPLACEABLE_BATTERY:
+            return None
+        specification = self.maintenance_item_specification
+        if not specification:
+            return None
+        return f"{self.maintenance_item_quantity} × {specification}"
 
     @property
     def source_entity_id(self) -> str | None:
@@ -71,7 +153,11 @@ class DeviceMaintenanceManager:
     @property
     def linked_entity_id(self) -> str | None:
         """Return entity whose device helper entities should link to."""
-        return self.source_entity_id or self.battery_entity_id
+        return (
+            self.explicit_linked_entity_id
+            or self.source_entity_id
+            or self.battery_entity_id
+        )
 
     @property
     def battery_percent(self) -> float | None:

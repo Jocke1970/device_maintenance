@@ -35,7 +35,7 @@ class DeviceMaintenanceActionButton(ButtonEntity):
         self._attr_suggested_object_id = (
             f"device_maintenance_{slugify(manager.name)}_action"
         )
-        self._attr_icon = "mdi:check-circle-outline"
+        self._attr_icon = manager.action_icon
         linked_entity = manager.linked_entity_id
         if linked_entity:
             self.device_entry = async_entity_id_to_device(hass, linked_entity)
