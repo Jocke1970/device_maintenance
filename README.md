@@ -4,7 +4,7 @@
 
 A Home Assistant custom integration for self-learning device maintenance, runtime tracking, battery cycles, and service intervals.
 
-> **Status:** first beta. `0.1.0-beta.1` is intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. It is not yet a stable release.
+> **Status:** first beta released from the `beta` branch. `0.1.0-beta.1` is intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.3`.
 
 Device Maintenance is being rebuilt from a collection of YAML helpers, template sensors, scripts, and automations into a proper Home Assistant helper integration with persistent runtime state and a strategy-based backend.
 
@@ -22,9 +22,10 @@ Current goals:
 - link helper entities to the source device instead of creating duplicate physical devices;
 - remain compatible with the existing Device Maintenance Lovelace card during migration.
 
-## Current beta version
+## Current versions
 
-`0.1.0-beta.1`
+- beta: `0.1.0-beta.1`
+- dev: `0.1.0-dev.3`
 
 The current backend provides:
 
