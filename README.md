@@ -24,7 +24,7 @@ Current goals:
 
 ## Current development version
 
-`0.1.0-dev.1`
+`0.1.0-dev.2`
 
 The current backend provides:
 
@@ -37,6 +37,8 @@ The current backend provides:
 - `session_runtime` and `elapsed` strategies;
 - English and Swedish translations;
 - Hassfest and HACS validation in CI.
+
+`0.1.0-dev.2` fixes helper-entity platform setup on current Home Assistant versions by using the current `homeassistant.helpers.device.async_entity_id_to_device` helper.
 
 ## Supported strategies
 
