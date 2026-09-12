@@ -4,21 +4,53 @@ The existing Home Assistant YAML implementation remains the production source of
 
 No legacy helper, automation, sensor, or card path is removed merely because an equivalent backend class exists.
 
+The migration principle is always:
+
+```text
+create new tracker → run in parallel → compare → preserve state → cut over → remove legacy
+```
+
+## State that must be preserved
+
+Depending on tracker type, migration may need to import:
+
+- last maintenance action timestamp;
+- cumulative runtime total;
+- current runtime baseline;
+- recent learned interval history;
+- special correction/exclusion state used by an adapter.
+
+A migration is not considered complete if the visible entity works but learned history or baseline state is silently reset.
+
 ## Phase 1 — Braun Oral-B proof
 
 First migration target:
 
-- display name: Braun Oral-B
-- strategy: `session_runtime`
-- source: `sensor.smart_series_8000_f2b0_varaktighet`
-- battery: `sensor.smart_series_8000_f2b0_batteri`
-- action: `Laddad`
-- starting interval: 90 minutes
-- history size: 5
+- display name: Braun Oral-B;
+- strategy: `session_runtime`;
+- source: `sensor.smart_series_8000_f2b0_varaktighet`;
+- battery: `sensor.smart_series_8000_f2b0_batteri`;
+- action: `Laddad`;
+- starting interval: 90 minutes;
+- history size: 5;
+- max accepted session delta: 1200 seconds.
 
-Why first: it exercises runtime accumulation, source restores, session resets, battery metadata, learned charge intervals, and short-runtime minute formatting without depending on Garmin adapters.
+Why first: it exercises runtime accumulation, source restores, session resets, battery metadata, learned charge intervals, short-runtime minute formatting, restart behavior, and the maintenance action boundary without depending on Garmin adapters.
 
-The current YAML implementation stays enabled while the integration runs in parallel. We compare cumulative runtime and a complete charge cycle before switching the card to the integration entity.
+The current YAML implementation stays enabled while the integration runs in parallel.
+
+Parity checks:
+
+1. startup with an already non-zero toothbrush session must not add false runtime;
+2. a normal increasing session must add only real new seconds;
+3. a session reset must continue accumulation correctly;
+4. Home Assistant restart must not duplicate runtime;
+5. battery metadata must follow the selected battery entity;
+6. pressing `Laddad` must store one valid interval and reset only the current baseline;
+7. the next cycle must start from zero effective runtime while cumulative total remains monotonic;
+8. learning labels and expected interval must match the intended history rules.
+
+Only after these checks pass across real use should the frontend switch from the YAML entity to the integration entity.
 
 ## Phase 2 — ordinary elapsed-time trackers
 
@@ -26,66 +58,98 @@ Move devices that currently follow the `input_datetime` + `input_text history` p
 
 Known examples include:
 
-- Garmin Fenix 7 Pro Sapphire
-- Garmin Index Scale
-- Withings Body Comp
-- Omron M7 Intelli IT
-- Remington HC4300
-- Skullshaver
-- Philips OneBlade charge cycle
-- Philips OneBlade blade replacement
-- SodaStream CO₂ cylinder replacement
-- Air Wick battery replacement
-- Air Wick refill replacement
+- Garmin Fenix 7 Pro Sapphire;
+- Garmin Index Scale;
+- Withings Body Comp;
+- Omron M7 Intelli IT;
+- Remington HC4300;
+- Skullshaver;
+- Philips OneBlade charge cycle;
+- Philips OneBlade blade replacement;
+- SodaStream CO₂ cylinder replacement;
+- Air Wick battery replacement;
+- Air Wick refill replacement.
 
-Existing last-action timestamps and learned history should be imported before legacy helpers are removed. The integration therefore needs an explicit migration/import path before this phase is promoted beyond `dev`.
+Before any of these are retired, the integration needs an explicit import path for the old last-action timestamp and interval history.
+
+The desired result is continuity: adding the new integration must not make a mature tracker look newly initialized.
 
 ## Phase 3 — cumulative activity runtime
 
-Add `cumulative_runtime` and source adapters for the activity-driven devices:
+Add `cumulative_runtime` and source adapters for activity-driven devices:
 
-- Garmin Edge 1040
-- Garmin Varia 511
-- Bontrager Ion 200 RT Flare
-- Stages Power L Shimano Ultegra R8100
+- Garmin Edge 1040;
+- Garmin Varia 511;
+- Bontrager Ion 200 RT Flare;
+- Stages Power L Shimano Ultegra R8100.
 
 The old internal Stages `r8000` identifiers may need compatibility aliases during migration, but the displayed device identity is R8100.
 
-Edge can use a simple cumulative entity attribute. Garmin Gear-backed devices need an adapter that can resolve the correct gear record without embedding Garmin-specific parsing in the generic runtime strategy.
+Edge can use a simple cumulative entity attribute. Garmin Gear-backed devices need an adapter that resolves the correct gear record without embedding Garmin-specific parsing in the generic runtime strategy.
+
+Migration must preserve the current cumulative-source baseline. Otherwise old lifetime activity would be mistaken for runtime in the new maintenance cycle.
 
 ## Phase 4 — Garmin Index Sleep Monitor
 
 Index Sleep is deliberately migrated last.
 
-The current runtime implementation contains important handling for delayed Garmin sleep booking after a charge, including pre-charge excluded seconds. It is considered locked until a new adapter demonstrates parity against the production sensor across charge, delayed-booking, correction, restart, and overnight cases.
+The current runtime implementation contains important handling for delayed Garmin sleep booking after a charge, including pre-charge excluded seconds. That implementation is considered locked until a new adapter demonstrates parity.
 
-Do not simplify this behavior during generic backend work.
+Required parity scenarios include:
+
+- normal overnight usage;
+- charge action;
+- Home Assistant restart;
+- delayed sleep booking after a charge;
+- later correction of an already booked sleep session;
+- pre-charge usage exclusion;
+- remaining-hours and remaining-nights estimates.
+
+Do not simplify this behavior merely to fit the generic strategy interface. The adapter exists specifically so specialized accounting can remain specialized.
 
 ## Phase 5 — frontend cut-over and YAML retirement
 
 Once the backend covers all production tracker types:
 
-1. teach the Device Maintenance card to consume integration-native entities/actions;
-2. add UI create/edit/delete flows;
-3. migrate tracker state;
+1. teach the Device Maintenance card to consume integration-native entities and actions;
+2. add UI-assisted create/edit/delete flows;
+3. import existing tracker state;
 4. run legacy and new systems side by side long enough to validate results;
-5. remove superseded YAML helpers, scripts, automations, and template sensors;
-6. remove compatibility code from the card only after the final legacy tracker is gone.
+5. switch the card to the integration entities;
+6. remove superseded YAML helpers, scripts, automations, and template sensors;
+7. remove compatibility code from the card only after the final legacy tracker is gone.
+
+## Removal rule
+
+Legacy state is removed **last**.
+
+For each tracker, the old implementation must remain recoverable until:
+
+- the new tracker survives restart;
+- at least one real maintenance cycle has been registered where practical;
+- displayed runtime/age agrees with the old implementation;
+- learned interval history is preserved or intentionally re-seeded;
+- the action button is confirmed not to double-book maintenance.
 
 ## Promotion gates
 
-### dev → beta
+### `dev` → `beta`
 
-- config flow works in a real HA instance;
+- config flow works in a real Home Assistant instance;
 - no startup errors;
-- storage survives restart/reload;
-- first migrated tracker agrees with legacy runtime;
-- HACS validation and hassfest pass.
+- storage survives restart and integration reload;
+- the first migrated tracker agrees with legacy runtime;
+- maintenance actions do not duplicate history;
+- Hassfest passes;
+- HACS validation passes;
+- migration limitations are documented.
 
-### beta → main
+### `beta` → `main`
 
 - migration is reversible or state-preserving;
 - no duplicate maintenance actions can be booked accidentally;
-- removal cleans integration storage for the deleted tracker;
+- deleting a tracker cleans only that tracker's integration storage;
 - card behavior is stable on desktop and mobile;
-- production device history has been observed across real maintenance cycles.
+- production device history has been observed across real maintenance cycles;
+- release documentation matches the actual supported strategies;
+- no known migration blocker remains for the release scope.
