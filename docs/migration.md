@@ -50,7 +50,29 @@ Parity checks:
 7. the next cycle must start from zero effective runtime while cumulative total remains monotonic;
 8. learning labels and expected interval must match the intended history rules.
 
-Only after these checks pass across real use should the frontend switch from the YAML entity to the integration entity.
+### Beta verification status
+
+Before `0.1.0-beta.1`, the real Oral-B tracker was tested side by side with the legacy YAML implementation.
+
+Verified:
+
+- an already populated source value was ignored on startup rather than booked as new runtime;
+- the first test session produced identical cumulative runtime in Python and legacy YAML;
+- a Home Assistant restart preserved the total without double-counting;
+- a source reset to zero did not add runtime;
+- a second session after reset continued the cumulative total with zero difference from legacy;
+- the maintenance action moved the Python baseline while preserving cumulative total;
+- the deliberately short 26-second test cycle was correctly rejected from learning history;
+- the moved baseline survived restart;
+- sensor and action button linked to the existing toothbrush device;
+- battery metadata followed the selected battery entity.
+
+Still required before retiring the legacy Oral-B tracker:
+
+- at least one complete real charge cycle;
+- validation that a real cycle is stored as a learning sample;
+- validation of the expected interval once multiple real samples exist;
+- frontend cut-over to the integration-native tracker/action.
 
 ## Phase 2 — ordinary elapsed-time trackers
 
