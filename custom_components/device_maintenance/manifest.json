@@ -1,11 +1,11 @@
 {
   "domain": "device_maintenance",
   "name": "Device Maintenance",
-  "version": "0.1.0-dev.1",
+  "codeowners": ["@Jocke1970"],
   "config_flow": true,
   "documentation": "https://github.com/Jocke1970/device_maintenance",
-  "issue_tracker": "https://github.com/Jocke1970/device_maintenance/issues",
-  "codeowners": ["@Jocke1970"],
   "integration_type": "helper",
-  "iot_class": "local_push"
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/Jocke1970/device_maintenance/issues",
+  "version": "0.1.0-dev.1"
 }
