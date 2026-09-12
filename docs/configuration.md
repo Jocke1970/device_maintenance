@@ -89,6 +89,15 @@ This is different from the maintenance item. A tracker can describe a built-in b
 
 Battery state does not currently alter the learned runtime interval in the Python backend; it is exposed as additional maintenance context.
 
+### Initial last action
+
+A newly created `elapsed` tracker asks when the current maintenance cycle started:
+
+- **Now** — use the time the tracker is created;
+- **Enter date/time** — seed the tracker with a known previous charge, replacement, or service time.
+
+A custom date/time is normalized to UTC before it is written to Device Maintenance storage. The selected time may not be in the future. This initial timestamp is mutable runtime state rather than permanent tracker configuration, so the one-shot seed is removed from the config entry after setup.
+
 ## `session_runtime`
 
 Use `session_runtime` when the source sensor reports the duration of the current usage session and resets between sessions.
@@ -154,6 +163,7 @@ Examples include charging a device, changing a filter, replacing a refill, chang
 | Action label | Yes | Based on item type | Text used for the maintenance action |
 | Start interval | Yes | 7 days | Used before learning has enough history |
 | History size | Yes | 5 | Number of recent completed intervals retained |
+| Last action | Yes | Now | Start the current cycle now or from a known previous date/time |
 
 Registering the maintenance action stores the elapsed interval, records the new action timestamp, and starts the next cycle.
 
