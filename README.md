@@ -4,7 +4,7 @@
 
 A Home Assistant custom integration for self-learning device maintenance, runtime tracking, battery cycles, and service intervals.
 
-> **Status:** first beta released from the `beta` branch. `0.1.0-beta.1` is intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.3`.
+> **Status:** first beta released from the `beta` branch. `0.1.0-beta.1` is intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.4`.
 
 Device Maintenance is being rebuilt from a collection of YAML helpers, template sensors, scripts, and automations into a proper Home Assistant helper integration with persistent runtime state and a strategy-based backend.
 
@@ -25,7 +25,7 @@ Current goals:
 ## Current versions
 
 - beta: `0.1.0-beta.1`
-- dev: `0.1.0-dev.3`
+- dev: `0.1.0-dev.4`
 
 The current backend provides:
 
@@ -36,6 +36,7 @@ The current backend provides:
 - battery metadata support;
 - adaptive interval learning from recent completed cycles;
 - `session_runtime` and `elapsed` strategies;
+- state-safe preview/import for compatible legacy `elapsed` trackers on `dev`;
 - English and Swedish translations;
 - local Home Assistant brand icons;
 - Hassfest and HACS validation in CI.
@@ -47,7 +48,7 @@ The first real `session_runtime` tracker, Braun Oral-B, has passed side-by-side 
 | Strategy | Use case | Current status |
 | --- | --- | --- |
 | `session_runtime` | Source entity reports the duration of the current usage session | Beta |
-| `elapsed` | Track wall-clock time since the previous maintenance action | Beta, migration import still planned |
+| `elapsed` | Track wall-clock time since the previous maintenance action | Beta; legacy state import under test on `dev` |
 | `cumulative_runtime` | Source exposes a monotonically increasing usage counter | Planned |
 | adapters | Specialized sources such as Garmin Gear or Garmin Index Sleep | Planned |
 
@@ -72,6 +73,8 @@ For beta testing, install the `beta` branch manually and run it alongside the ex
 After installation, add a tracker from:
 
 **Settings → Devices & services → Add integration → Device Maintenance**
+
+On `dev`, the first screen can also discover and preview compatible legacy `elapsed` trackers. See [Legacy import](docs/legacy-import.md).
 
 ## First migration target: Braun Oral-B
 
@@ -105,6 +108,7 @@ Feature work does not go directly to `beta` or `main`.
 - [Configuration](docs/configuration.md)
 - [Architecture](docs/architecture.md)
 - [Migration plan](docs/migration.md)
+- [Legacy import](docs/legacy-import.md)
 - [Development and release flow](docs/development.md)
 
 ## Roadmap
@@ -112,7 +116,7 @@ Feature work does not go directly to `beta` or `main`.
 The current direction is:
 
 1. observe Braun Oral-B across a full real charge cycle;
-2. add state-safe import for ordinary elapsed-time trackers;
+2. validate state-safe import for ordinary elapsed-time trackers;
 3. migrate ordinary elapsed-time trackers;
 4. add `cumulative_runtime` for activity-driven devices;
 5. add adapters for Garmin Gear and Garmin Index Sleep;
