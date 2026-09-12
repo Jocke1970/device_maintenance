@@ -81,9 +81,9 @@ New `elapsed` trackers also ask when the current maintenance cycle started. Choo
 
 Each completed maintenance cycle can become a history sample. The expected interval is calculated from recent samples once at least two valid cycles exist.
 
-- fewer than 2 samples: **Startintervall**;
-- 2–3 samples: **Preliminärt snitt**;
-- 4 or more samples: **Inlärt snitt**.
+- fewer than 2 samples: use the configured starting interval;
+- 2–3 samples: use a preliminary average;
+- 4 or more samples: use the learned average.
 
 The default history size is five samples and can be changed per tracker.
 
@@ -104,7 +104,7 @@ The first live parity test uses:
 - strategy: `session_runtime`;
 - source: `sensor.smart_series_8000_f2b0_varaktighet`;
 - battery: `sensor.smart_series_8000_f2b0_batteri`;
-- action: `Laddad`;
+- action: charge completed;
 - starting interval: 90 minutes;
 - history size: 5.
 
