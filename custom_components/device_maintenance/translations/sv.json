@@ -1,0 +1,59 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Lägg till underhållsenhet",
+        "description": "Välj namn och hur användningen ska mätas.",
+        "data": {
+          "name": "Namn",
+          "strategy": "Mätmetod"
+        }
+      },
+      "session_runtime": {
+        "title": "Sessionstid",
+        "description": "Summerar positiva förändringar från en sensor som visar drifttid för aktuell session.",
+        "data": {
+          "source_entity": "Sensor för sessionstid",
+          "battery_entity": "Batterisensor",
+          "action_label": "Underhållsåtgärd",
+          "fallback_minutes": "Startintervall",
+          "history_size": "Intervall att lära från",
+          "max_session_seconds": "Maximal accepterad sessionsförändring"
+        }
+      },
+      "elapsed": {
+        "title": "Tid sedan åtgärd",
+        "description": "Mäter vanlig kalendertid mellan underhållsåtgärder.",
+        "data": {
+          "battery_entity": "Batterisensor",
+          "action_label": "Underhållsåtgärd",
+          "fallback_days": "Startintervall",
+          "history_size": "Intervall att lära från"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Inställningar för Device Maintenance",
+        "data": {
+          "battery_entity": "Batterisensor",
+          "action_label": "Underhållsåtgärd",
+          "fallback_minutes": "Startintervall",
+          "fallback_days": "Startintervall",
+          "history_size": "Intervall att lära från",
+          "max_session_seconds": "Maximal accepterad sessionsförändring"
+        }
+      }
+    }
+  },
+  "selector": {
+    "strategy": {
+      "options": {
+        "session_runtime": "Sessionstid",
+        "elapsed": "Tid sedan åtgärd"
+      }
+    }
+  }
+}

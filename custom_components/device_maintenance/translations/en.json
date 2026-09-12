@@ -1,0 +1,59 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add maintenance tracker",
+        "description": "Choose a name and how usage should be measured.",
+        "data": {
+          "name": "Name",
+          "strategy": "Tracking method"
+        }
+      },
+      "session_runtime": {
+        "title": "Session runtime",
+        "description": "Accumulate positive changes from a sensor that reports runtime for the current session.",
+        "data": {
+          "source_entity": "Session runtime sensor",
+          "battery_entity": "Battery sensor",
+          "action_label": "Maintenance action",
+          "fallback_minutes": "Starting interval",
+          "history_size": "Intervals to learn from",
+          "max_session_seconds": "Maximum accepted session delta"
+        }
+      },
+      "elapsed": {
+        "title": "Elapsed time",
+        "description": "Track wall-clock time between maintenance actions.",
+        "data": {
+          "battery_entity": "Battery sensor",
+          "action_label": "Maintenance action",
+          "fallback_days": "Starting interval",
+          "history_size": "Intervals to learn from"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Device Maintenance settings",
+        "data": {
+          "battery_entity": "Battery sensor",
+          "action_label": "Maintenance action",
+          "fallback_minutes": "Starting interval",
+          "fallback_days": "Starting interval",
+          "history_size": "Intervals to learn from",
+          "max_session_seconds": "Maximum accepted session delta"
+        }
+      }
+    }
+  },
+  "selector": {
+    "strategy": {
+      "options": {
+        "session_runtime": "Session runtime",
+        "elapsed": "Elapsed time"
+      }
+    }
+  }
+}
