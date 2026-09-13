@@ -19,10 +19,11 @@
       },
       "maintenance_item": {
         "title": "What is maintained or replaced?",
-        "description": "Describe the maintenance/replacement item itself. A battery percentage sensor is separate and selected later. You can also link the tracker to a physical Home Assistant device through any entity.",
+        "description": "Describe the maintenance/replacement item itself. A battery percentage sensor is separate and selected later. You can link the tracker to a physical Home Assistant device and, when needed, give multiple trackers the same UI group so they are shown as one card.",
         "data": {
           "maintenance_item_type": "Battery / replacement item",
-          "linked_entity": "Link to physical device through entity (optional)"
+          "linked_entity": "Link to physical device through entity (optional)",
+          "ui_group": "UI group (optional)"
         }
       },
       "battery_details": {
@@ -104,12 +105,13 @@
     "step": {
       "init": {
         "title": "Device Maintenance settings",
-        "description": "Maintenance-item metadata can be edited without resetting learned history. Quantity and specification are ignored for a built-in battery.",
+        "description": "Metadata can be edited without resetting learned history. Give trackers the same UI group to show them together in the dynamic card. Leave it blank for a separate card.",
         "data": {
           "maintenance_item_type": "Battery / replacement item",
           "maintenance_item_quantity": "Quantity",
           "maintenance_item_specification": "Type / model / specification",
           "linked_entity": "Link to physical device through entity",
+          "ui_group": "UI group",
           "battery_entity": "Battery sensor",
           "action_label": "Maintenance action",
           "fallback_minutes": "Starting interval",

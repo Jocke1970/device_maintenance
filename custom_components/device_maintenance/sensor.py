@@ -77,6 +77,7 @@ class DeviceMaintenanceSensor(SensorEntity):
             "action_label": self.manager.action_label,
             "action_icon": self.manager.action_icon,
             "picture_key": self.manager.picture_key or slugify(self.manager.name),
+            "ui_group": self.manager.ui_group or None,
             "maintenance_item_type": self.manager.maintenance_item_type,
             "maintenance_item_quantity": self.manager.maintenance_item_quantity,
             "maintenance_item_specification": self.manager.maintenance_item_specification,

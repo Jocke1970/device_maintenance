@@ -19,10 +19,11 @@
       },
       "maintenance_item": {
         "title": "Vad underhålls eller byts?",
-        "description": "Beskriv själva underhålls-/utbytesdelen. En batterisensor är separat och väljs senare. Du kan också länka trackern till en fysisk Home Assistant-enhet via valfri entitet.",
+        "description": "Beskriv själva underhålls-/utbytesdelen. En batterisensor är separat och väljs senare. Du kan länka trackern till en fysisk Home Assistant-enhet och, vid behov, ange samma UI-grupp för flera trackers som ska visas som ett gemensamt kort.",
         "data": {
           "maintenance_item_type": "Batteri / utbytesenhet",
-          "linked_entity": "Koppla till fysisk enhet via entitet (valfri)"
+          "linked_entity": "Koppla till fysisk enhet via entitet (valfri)",
+          "ui_group": "UI-grupp (valfri)"
         }
       },
       "battery_details": {
@@ -104,12 +105,13 @@
     "step": {
       "init": {
         "title": "Inställningar för Device Maintenance",
-        "description": "Metadata om underhållsdelen kan ändras utan att nollställa inlärd historik. För inbyggt batteri ignoreras antal och specifikation.",
+        "description": "Metadata kan ändras utan att nollställa inlärd historik. Ange samma UI-grupp för trackers som ska visas tillsammans i det dynamiska kortet. Lämna tomt för ett eget kort.",
         "data": {
           "maintenance_item_type": "Batteri / utbytesenhet",
           "maintenance_item_quantity": "Antal",
           "maintenance_item_specification": "Typ / modell / specifikation",
           "linked_entity": "Koppla till fysisk enhet via entitet",
+          "ui_group": "UI-grupp",
           "battery_entity": "Batterisensor",
           "action_label": "Underhållsåtgärd",
           "fallback_minutes": "Startintervall",

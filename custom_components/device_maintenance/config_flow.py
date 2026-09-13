@@ -44,6 +44,7 @@ from .const import (
     CONF_PICTURE_KEY,
     CONF_SOURCE_ENTITY,
     CONF_STRATEGY,
+    CONF_UI_GROUP,
     DEFAULT_ACTION_LABEL,
     DEFAULT_ELAPSED_FALLBACK_SECONDS,
     DEFAULT_HISTORY_SIZE,
@@ -100,7 +101,10 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         schema = vol.Schema(
             {
                 vol.Required(CONF_NAME): TextSelector(),
-                vol.Required(CONF_STRATEGY, default=STRATEGY_SESSION_RUNTIME): SelectSelector(
+                vol.Required(
+                    CONF_STRATEGY,
+                    default=STRATEGY_SESSION_RUNTIME,
+                ): SelectSelector(
                     SelectSelectorConfig(
                         options=[STRATEGY_SESSION_RUNTIME, STRATEGY_ELAPSED],
                         mode=SelectSelectorMode.DROPDOWN,
@@ -121,6 +125,9 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_MAINTENANCE_ITEM_TYPE
             ]
             self._base[CONF_LINKED_ENTITY] = user_input.get(CONF_LINKED_ENTITY)
+            self._base[CONF_UI_GROUP] = _clean_optional_text(
+                user_input.get(CONF_UI_GROUP)
+            )
             if (
                 self._base[CONF_MAINTENANCE_ITEM_TYPE]
                 == ITEM_TYPE_BUILT_IN_BATTERY
@@ -150,6 +157,7 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Optional(CONF_LINKED_ENTITY): EntitySelector(
                     EntitySelectorConfig()
                 ),
+                vol.Optional(CONF_UI_GROUP): TextSelector(),
             }
         )
         return self.async_show_form(step_id="maintenance_item", data_schema=schema)
@@ -276,6 +284,7 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             options = {
                 CONF_BATTERY_ENTITY: candidate.battery_entity,
                 CONF_LINKED_ENTITY: candidate.linked_entity,
+                CONF_UI_GROUP: "",
                 CONF_ACTION_LABEL: candidate.action_label,
                 CONF_FALLBACK_INTERVAL_SECONDS: candidate.fallback_interval_seconds,
                 CONF_HISTORY_SIZE: candidate.history_size,
@@ -329,9 +338,14 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 **_item_options(self._base),
                 CONF_BATTERY_ENTITY: user_input.get(CONF_BATTERY_ENTITY),
                 CONF_ACTION_LABEL: user_input[CONF_ACTION_LABEL],
-                CONF_FALLBACK_INTERVAL_SECONDS: float(user_input["fallback_minutes"]) * 60,
+                CONF_FALLBACK_INTERVAL_SECONDS: float(
+                    user_input["fallback_minutes"]
+                )
+                * 60,
                 CONF_HISTORY_SIZE: int(user_input[CONF_HISTORY_SIZE]),
-                CONF_MAX_SESSION_SECONDS: int(user_input[CONF_MAX_SESSION_SECONDS]),
+                CONF_MAX_SESSION_SECONDS: int(
+                    user_input[CONF_MAX_SESSION_SECONDS]
+                ),
                 CONF_PICTURE_KEY: slugify(self._base[CONF_NAME]),
             }
             return self.async_create_entry(
@@ -364,7 +378,10 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         unit_of_measurement="min",
                     )
                 ),
-                vol.Required(CONF_HISTORY_SIZE, default=DEFAULT_HISTORY_SIZE): NumberSelector(
+                vol.Required(
+                    CONF_HISTORY_SIZE,
+                    default=DEFAULT_HISTORY_SIZE,
+                ): NumberSelector(
                     NumberSelectorConfig(
                         min=2,
                         max=20,
@@ -402,7 +419,10 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 **_item_options(self._base),
                 CONF_BATTERY_ENTITY: user_input.get(CONF_BATTERY_ENTITY),
                 CONF_ACTION_LABEL: user_input[CONF_ACTION_LABEL],
-                CONF_FALLBACK_INTERVAL_SECONDS: float(user_input["fallback_days"]) * 86400,
+                CONF_FALLBACK_INTERVAL_SECONDS: float(
+                    user_input["fallback_days"]
+                )
+                * 86400,
                 CONF_HISTORY_SIZE: int(user_input[CONF_HISTORY_SIZE]),
                 CONF_PICTURE_KEY: slugify(self._base[CONF_NAME]),
             }
@@ -429,7 +449,10 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         unit_of_measurement="d",
                     )
                 ),
-                vol.Required(CONF_HISTORY_SIZE, default=DEFAULT_HISTORY_SIZE): NumberSelector(
+                vol.Required(
+                    CONF_HISTORY_SIZE,
+                    default=DEFAULT_HISTORY_SIZE,
+                ): NumberSelector(
                     NumberSelectorConfig(
                         min=2,
                         max=20,
@@ -484,9 +507,13 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 parsed = dt_util.parse_datetime(normalized)
                 if parsed is None:
-                    errors[CONF_INITIAL_ACTION_DATETIME] = "invalid_initial_action"
+                    errors[CONF_INITIAL_ACTION_DATETIME] = (
+                        "invalid_initial_action"
+                    )
                 elif parsed > dt_util.utcnow():
-                    errors[CONF_INITIAL_ACTION_DATETIME] = "future_initial_action"
+                    errors[CONF_INITIAL_ACTION_DATETIME] = (
+                        "future_initial_action"
+                    )
                 else:
                     self._pending_entry_data[CONF_MIGRATION_SEED] = RuntimeState(
                         last_action=normalized
@@ -548,7 +575,11 @@ class DeviceMaintenanceOptionsFlow(OptionsFlowWithReload):
                 ""
                 if item_type == ITEM_TYPE_BUILT_IN_BATTERY
                 else str(
-                    user_input.get(CONF_MAINTENANCE_ITEM_SPECIFICATION, "") or ""
+                    user_input.get(
+                        CONF_MAINTENANCE_ITEM_SPECIFICATION,
+                        "",
+                    )
+                    or ""
                 ).strip()
             )
             options = {
@@ -557,6 +588,9 @@ class DeviceMaintenanceOptionsFlow(OptionsFlowWithReload):
                 CONF_MAINTENANCE_ITEM_QUANTITY: item_quantity,
                 CONF_MAINTENANCE_ITEM_SPECIFICATION: item_specification,
                 CONF_LINKED_ENTITY: user_input.get(CONF_LINKED_ENTITY),
+                CONF_UI_GROUP: _clean_optional_text(
+                    user_input.get(CONF_UI_GROUP)
+                ),
                 CONF_BATTERY_ENTITY: user_input.get(CONF_BATTERY_ENTITY),
                 CONF_ACTION_LABEL: user_input[CONF_ACTION_LABEL],
                 CONF_HISTORY_SIZE: int(user_input[CONF_HISTORY_SIZE]),
@@ -603,11 +637,21 @@ class DeviceMaintenanceOptionsFlow(OptionsFlowWithReload):
             ): TextSelector(),
             vol.Optional(
                 CONF_LINKED_ENTITY,
-                description={"suggested_value": current.get(CONF_LINKED_ENTITY)},
+                description={
+                    "suggested_value": current.get(CONF_LINKED_ENTITY)
+                },
             ): EntitySelector(EntitySelectorConfig()),
             vol.Optional(
+                CONF_UI_GROUP,
+                description={
+                    "suggested_value": current.get(CONF_UI_GROUP, "")
+                },
+            ): TextSelector(),
+            vol.Optional(
                 CONF_BATTERY_ENTITY,
-                description={"suggested_value": current.get(CONF_BATTERY_ENTITY)},
+                description={
+                    "suggested_value": current.get(CONF_BATTERY_ENTITY)
+                },
             ): EntitySelector(EntitySelectorConfig(domain="sensor")),
             vol.Required(
                 CONF_ACTION_LABEL,
@@ -621,7 +665,10 @@ class DeviceMaintenanceOptionsFlow(OptionsFlowWithReload):
             ): TextSelector(),
             vol.Required(
                 CONF_HISTORY_SIZE,
-                default=current.get(CONF_HISTORY_SIZE, DEFAULT_HISTORY_SIZE),
+                default=current.get(
+                    CONF_HISTORY_SIZE,
+                    DEFAULT_HISTORY_SIZE,
+                ),
             ): NumberSelector(
                 NumberSelectorConfig(
                     min=2,
@@ -631,6 +678,7 @@ class DeviceMaintenanceOptionsFlow(OptionsFlowWithReload):
                 )
             ),
         }
+
         if strategy == STRATEGY_SESSION_RUNTIME:
             schema = vol.Schema(
                 {
@@ -727,13 +775,17 @@ def _item_options(base: dict[str, Any]) -> dict[str, Any]:
             base.get(CONF_MAINTENANCE_ITEM_SPECIFICATION, "") or ""
         ).strip(),
         CONF_LINKED_ENTITY: base.get(CONF_LINKED_ENTITY),
+        CONF_UI_GROUP: _clean_optional_text(base.get(CONF_UI_GROUP)),
     }
 
 
 def _action_default(base: dict[str, Any]) -> str:
     """Return an action label matching the selected maintenance item."""
     item_type = str(
-        base.get(CONF_MAINTENANCE_ITEM_TYPE, DEFAULT_MAINTENANCE_ITEM_TYPE)
+        base.get(
+            CONF_MAINTENANCE_ITEM_TYPE,
+            DEFAULT_MAINTENANCE_ITEM_TYPE,
+        )
     )
     return ACTION_LABEL_BY_ITEM_TYPE.get(item_type, DEFAULT_ACTION_LABEL)
 
@@ -754,6 +806,11 @@ def _infer_item_type_from_action(action_label: Any) -> str:
     if "ladd" in normalized or "charg" in normalized:
         return "built_in_battery"
     return ITEM_TYPE_OTHER
+
+
+def _clean_optional_text(value: Any) -> str:
+    """Return a stripped optional text value."""
+    return str(value or "").strip()
 
 
 def _normalize_initial_action_datetime(
@@ -801,7 +858,11 @@ def _item_summary(
         "co2_cylinder": "CO₂ cylinder",
         "other": "Other",
     }
-    labels = labels_sv if str(language or "").lower().startswith("sv") else labels_en
+    labels = (
+        labels_sv
+        if str(language or "").lower().startswith("sv")
+        else labels_en
+    )
     label = labels.get(item_type, item_type)
     if item_type == ITEM_TYPE_BUILT_IN_BATTERY:
         return label

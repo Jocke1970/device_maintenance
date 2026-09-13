@@ -18,6 +18,7 @@ from .const import (
     CONF_MAINTENANCE_ITEM_TYPE,
     CONF_NAME,
     CONF_PICTURE_KEY,
+    CONF_UI_GROUP,
     DEFAULT_ACTION_LABEL,
     DEFAULT_MAINTENANCE_ITEM_QUANTITY,
     DEFAULT_MAINTENANCE_ITEM_TYPE,
@@ -78,6 +79,11 @@ class DeviceMaintenanceManager:
     def picture_key(self) -> str:
         """Return optional frontend picture key."""
         return str(self.entry.options.get(CONF_PICTURE_KEY, ""))
+
+    @property
+    def ui_group(self) -> str:
+        """Return optional explicit frontend group key."""
+        return str(self.entry.options.get(CONF_UI_GROUP, "") or "").strip()
 
     @property
     def battery_entity_id(self) -> str | None:

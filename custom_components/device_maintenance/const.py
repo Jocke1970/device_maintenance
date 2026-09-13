@@ -6,7 +6,7 @@ from homeassistant.const import Platform
 
 DOMAIN = "device_maintenance"
 NAME = "Device Maintenance"
-VERSION = "0.1.0-dev.8"
+VERSION = "0.1.0-dev.9"
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BUTTON]
 
@@ -45,6 +45,7 @@ CONF_STRATEGY = "strategy"
 CONF_SOURCE_ENTITY = "source_entity"
 CONF_BATTERY_ENTITY = "battery_entity"
 CONF_LINKED_ENTITY = "linked_entity"
+CONF_UI_GROUP = "ui_group"
 CONF_ACTION_LABEL = "action_label"
 CONF_FALLBACK_INTERVAL_SECONDS = "fallback_interval_seconds"
 CONF_HISTORY_SIZE = "history_size"
