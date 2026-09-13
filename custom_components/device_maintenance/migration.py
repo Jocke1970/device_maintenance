@@ -168,18 +168,39 @@ def _maintenance_item_metadata(
         quantity, specification = _parse_battery_type(battery_type)
         return ITEM_TYPE_REPLACEABLE_BATTERY, quantity, specification
 
-    normalized = f"{state.name} {action_label}".casefold()
-    if "blad" in normalized or "blade" in normalized:
+    name = state.name.casefold()
+    action = action_label.casefold()
+
+    # Prefer explicit replacement wording in the tracker name. Do not treat
+    # product names such as "OneBlade" as a blade-replacement tracker merely
+    # because they contain the word "blade".
+    if any(token in name for token in ("bladbyte", "blad byte", "blade replacement", "blade change")):
         return ITEM_TYPE_BLADE, 1, ""
-    if "kolsyre" in normalized or "co2" in normalized or "co₂" in normalized:
+    if "kolsyre" in name or "co2" in name or "co₂" in name:
         return ITEM_TYPE_CO2_CYLINDER, 1, ""
-    if "filter" in normalized:
+    if "filter" in name:
         return ITEM_TYPE_FILTER, 1, ""
-    if "patron" in normalized or "refill" in normalized:
+    if "patron" in name or "refill" in name:
         return ITEM_TYPE_CARTRIDGE, 1, ""
-    if "batteri" in normalized or "battery" in normalized:
+    if any(token in name for token in ("batteribyte", "batteri byte", "battery replacement", "battery change")):
         return ITEM_TYPE_REPLACEABLE_BATTERY, 1, ""
-    if "ladd" in normalized or "charg" in normalized:
+
+    # The configured action label is normally the strongest semantic hint for
+    # ordinary charge/replacement trackers.
+    if "blad" in action or "blade" in action:
+        return ITEM_TYPE_BLADE, 1, ""
+    if "kolsyre" in action or "co2" in action or "co₂" in action:
+        return ITEM_TYPE_CO2_CYLINDER, 1, ""
+    if "filter" in action:
+        return ITEM_TYPE_FILTER, 1, ""
+    if "patron" in action or "refill" in action:
+        return ITEM_TYPE_CARTRIDGE, 1, ""
+    if "batteri" in action or "battery" in action:
+        return ITEM_TYPE_REPLACEABLE_BATTERY, 1, ""
+    if "ladd" in action or "charg" in action:
+        return ITEM_TYPE_BUILT_IN_BATTERY, 1, ""
+
+    if "ladd" in name or "charg" in name:
         return ITEM_TYPE_BUILT_IN_BATTERY, 1, ""
     return ITEM_TYPE_OTHER, 1, ""
 
