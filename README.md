@@ -4,7 +4,7 @@
 
 A Home Assistant custom integration for self-learning device maintenance, runtime tracking, battery cycles, and service intervals.
 
-> **Status:** `0.1.0-beta.2` is the current pre-release on the `beta` branch, intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.7`.
+> **Status:** `0.1.0-beta.2` is the current pre-release on the `beta` branch, intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.8`.
 
 Device Maintenance is being rebuilt from a collection of YAML helpers, template sensors, scripts, and automations into a proper Home Assistant helper integration with persistent runtime state and a strategy-based backend.
 
@@ -27,7 +27,7 @@ Current goals:
 ## Current versions
 
 - beta: `0.1.0-beta.2`
-- dev: `0.1.0-dev.7`
+- dev: `0.1.0-dev.8`
 
 The current backend provides:
 
@@ -36,7 +36,9 @@ The current backend provides:
 - one maintenance sensor per tracker;
 - one native action button per tracker;
 - stable `entry_id` metadata on both sensor and action button for dynamic frontend pairing;
+- legacy-source metadata for frontend compatibility during migration;
 - structured metadata for built-in batteries, replaceable batteries, filters, cartridges/refills, blades, CO₂ cylinders, and other maintenance items;
+- safer legacy metadata inference that avoids product-name false positives such as `OneBlade` being treated as a blade-replacement action;
 - optional explicit linking to a physical Home Assistant device through an entity;
 - an explicit initial last-action choice for new `elapsed` trackers (`Now` or a known date/time);
 - battery metadata support;
