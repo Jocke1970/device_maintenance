@@ -4,7 +4,7 @@
 
 A Home Assistant custom integration for self-learning device maintenance, runtime tracking, battery cycles, and service intervals.
 
-> **Status:** `0.1.0-beta.2` is the current pre-release on the `beta` branch, intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.8`.
+> **Status:** `0.1.0-beta.2` is the current pre-release on the `beta` branch, intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.9`.
 
 Device Maintenance is being rebuilt from a collection of YAML helpers, template sensors, scripts, and automations into a proper Home Assistant helper integration with persistent runtime state and a strategy-based backend.
 
@@ -21,13 +21,14 @@ Current goals:
 - describe what is actually charged or replaced with structured maintenance-item metadata;
 - reuse the same backend for many different device types;
 - link helper entities to the source device instead of creating duplicate physical devices;
+- support explicit UI grouping so several maintenance trackers for one physical product can be shown together;
 - migrate legacy timestamps and history without deleting the old implementation;
-- remain compatible with the existing Device Maintenance Lovelace card during migration.
+- remain compatible with the Device Maintenance Lovelace card during migration.
 
 ## Current versions
 
 - beta: `0.1.0-beta.2`
-- dev: `0.1.0-dev.8`
+- dev: `0.1.0-dev.9`
 
 The current backend provides:
 
@@ -36,6 +37,7 @@ The current backend provides:
 - one maintenance sensor per tracker;
 - one native action button per tracker;
 - stable `entry_id` metadata on both sensor and action button for dynamic frontend pairing;
+- optional `ui_group` metadata for combining multiple trackers into one frontend device card;
 - structured metadata for built-in batteries, replaceable batteries, filters, cartridges/refills, blades, CO₂ cylinders, and other maintenance items;
 - safer legacy metadata inference that avoids product-name false positives such as `OneBlade` being treated as a blade-replacement action;
 - optional explicit linking to a physical Home Assistant device through an entity;
@@ -61,11 +63,11 @@ The first real legacy `elapsed` migration, Garmin Fenix 7 Pro Sapphire, has also
 | `cumulative_runtime` | Source exposes a monotonically increasing usage counter | Planned |
 | adapters | Specialized sources such as Garmin Gear or Garmin Index Sleep | Planned |
 
-`session_runtime` is the first production migration target and is designed to handle sources that reset between sessions without counting startup restores as new runtime.
+`session_runtime` is designed to handle sources that reset between sessions without counting startup restores as new runtime.
 
 ## Maintenance item metadata
 
-A tracker describes both **how the interval is measured** and **what is actually maintained**. New trackers can describe:
+A tracker describes both **how the interval is measured** and **what is actually maintained**. Trackers can describe:
 
 - built-in battery;
 - replaceable battery, including quantity and battery type;
@@ -76,6 +78,19 @@ A tracker describes both **how the interval is measured** and **what is actually
 - another custom replacement item.
 
 The optional battery percentage sensor is separate metadata. An `elapsed` tracker can also be explicitly linked to a physical Home Assistant device through any entity belonging to that device.
+
+### UI grouping
+
+Several trackers can belong to the same physical product while keeping independent history, prediction, and action buttons. Give those trackers the same optional **UI group** value in the integration options. The dynamic Device Maintenance card can then render them as one product card with several maintenance rows.
+
+Example:
+
+```text
+OneBlade QP6652          ui_group: oneblade_qp6652
+OneBlade QP6652 Bladbyte ui_group: oneblade_qp6652
+```
+
+The backend still treats these as two independent trackers. Grouping is presentation metadata only.
 
 New `elapsed` trackers also ask when the current maintenance cycle started. Choose **Now** when the action has just been performed, or enter the known previous action date/time so a tracker does not incorrectly start at zero age.
 
@@ -93,7 +108,7 @@ The default history size is five samples and can be changed per tracker.
 
 There is no stable release yet.
 
-For beta testing, install the `beta` branch manually and run it alongside the existing YAML implementation. Active development remains on `dev`. See [Installation](docs/installation.md).
+For beta testing, install the `beta` branch manually. Active development remains on `dev`. See [Installation](docs/installation.md).
 
 After installation, add a tracker from:
 
@@ -110,8 +125,6 @@ The first live parity test uses:
 - starting interval: 90 minutes;
 - history size: 5.
 
-The legacy YAML implementation remains active during the beta test. Nothing is removed until the integration has demonstrated matching behavior across real usage and maintenance cycles.
-
 ## Branch model
 
 Development follows a strict three-branch flow:
@@ -119,7 +132,7 @@ Development follows a strict three-branch flow:
 `dev` → `beta` → `main`
 
 - `dev` — active development; schemas may still change;
-- `beta` — testable pre-release builds and real Home Assistant migration validation;
+- `beta` — testable pre-release builds and real Home Assistant validation;
 - `main` — stable releases only.
 
 Feature work does not go directly to `beta` or `main`.
@@ -137,13 +150,11 @@ Feature work does not go directly to `beta` or `main`.
 
 The current direction is:
 
-1. observe Braun Oral-B across a full real charge cycle;
-2. harden and validate state-safe import for ordinary elapsed-time trackers;
-3. migrate ordinary elapsed-time trackers;
-4. add `cumulative_runtime` for activity-driven devices;
-5. add adapters for Garmin Gear and Garmin Index Sleep;
-6. move the Device Maintenance card from owning logic to acting as a UI client;
-7. retire the legacy YAML implementation only after state-safe migration.
+1. finish the dynamic Device Maintenance card and grouped-device presentation;
+2. add `cumulative_runtime` for activity-driven devices;
+3. add adapters for Garmin Gear and Garmin Index Sleep;
+4. validate the remaining special trackers;
+5. retire legacy import/YAML support before the stable release once migration is complete.
 
 ## License
 
