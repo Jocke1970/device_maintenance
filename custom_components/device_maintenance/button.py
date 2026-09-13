@@ -40,6 +40,19 @@ class DeviceMaintenanceActionButton(ButtonEntity):
         if linked_entity:
             self.device_entry = async_entity_id_to_device(hass, linked_entity)
 
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Expose stable metadata for frontend consumers."""
+        return {
+            "backend": "device_maintenance",
+            "entry_id": self.manager.entry.entry_id,
+            "display_name": self.manager.name,
+            "action_label": self.manager.action_label,
+            "action_icon": self.manager.action_icon,
+            "maintenance_item_type": self.manager.maintenance_item_type,
+            "maintenance_item_summary": self.manager.maintenance_item_summary,
+        }
+
     async def async_press(self) -> None:
         """Register the configured action."""
         await self.manager.async_register_action()
