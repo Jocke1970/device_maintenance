@@ -23,12 +23,13 @@ Current goals:
 - link helper entities to the source device instead of creating duplicate physical devices;
 - support explicit UI grouping so several maintenance trackers for one physical product can be shown together;
 - migrate legacy timestamps and history without deleting the old implementation;
-- remain compatible with the Device Maintenance Lovelace card during migration.
+- keep the Lovelace frontend as a thin UI client rather than a second maintenance backend.
 
 ## Current versions
 
 - beta: `0.1.0-beta.2`
-- dev: `0.1.0-dev.9`
+- dev backend: `0.1.0-dev.9`
+- current development Lovelace card: `0.2.0-dev.8`
 
 The current backend provides:
 
@@ -49,6 +50,8 @@ The current backend provides:
 - English and Swedish translations;
 - local Home Assistant brand icons;
 - Hassfest and HACS validation in CI.
+
+The current development card dynamically discovers Device Maintenance sensors, pairs their action buttons through `entry_id`, renders pictures and maintenance metadata, sorts by urgency, and can combine several independent trackers into one product card through `ui_group`. Grouped presentation has been verified with Philips OneBlade (charge + blade replacement) and Air Wick (refill + battery replacement).
 
 The first real `session_runtime` tracker, Braun Oral-B, has passed side-by-side parity checks for normal runtime accumulation, session reset, restart behavior, maintenance baseline persistence, short-cycle filtering, battery metadata, and source-device linking. A full real charge cycle is still required before retiring the legacy Oral-B tracker.
 
@@ -81,16 +84,21 @@ The optional battery percentage sensor is separate metadata. An `elapsed` tracke
 
 ### UI grouping
 
-Several trackers can belong to the same physical product while keeping independent history, prediction, and action buttons. Give those trackers the same optional **UI group** value in the integration options. The dynamic Device Maintenance card can then render them as one product card with several maintenance rows.
+Several trackers can belong to the same physical product while keeping independent history, prediction, and action buttons. Give those trackers the same optional **UI group** value in the integration options. The dynamic Device Maintenance card then renders them as one product card with several maintenance rows.
 
-Example:
+Examples:
 
 ```text
 OneBlade QP6652          ui_group: oneblade_qp6652
 OneBlade QP6652 Bladbyte ui_group: oneblade_qp6652
+
+Air Wick Patronbyte      ui_group: air_wick
+Air Wick Batteribyte     ui_group: air_wick
 ```
 
-The backend still treats these as two independent trackers. Grouping is presentation metadata only.
+The backend still treats every row as an independent tracker. Grouping is presentation metadata only and must not be implemented by pointing `linked_entity`, `battery_entity`, or `source_entity` at another Device Maintenance tracker.
+
+The card derives a shared product title from the common beginning of grouped tracker names, keeps separate progress/prognosis/action rows, and localizes generic replacement metadata such as `cartridge` and `blade` for display.
 
 New `elapsed` trackers also ask when the current maintenance cycle started. Choose **Now** when the action has just been performed, or enter the known previous action date/time so a tracker does not incorrectly start at zero age.
 
@@ -113,6 +121,8 @@ For beta testing, install the `beta` branch manually. Active development remains
 After installation, add a tracker from:
 
 **Settings → Devices & services → Add integration → Device Maintenance**
+
+Because Device Maintenance declares itself as a Home Assistant helper integration, existing tracker entries are managed from the helper/config-entry UI rather than by creating duplicate integrations for each edit.
 
 ## First migration target: Braun Oral-B
 
@@ -150,11 +160,12 @@ Feature work does not go directly to `beta` or `main`.
 
 The current direction is:
 
-1. finish the dynamic Device Maintenance card and grouped-device presentation;
+1. keep the dynamic grouped card stable while the remaining backend tracker types are migrated;
 2. add `cumulative_runtime` for activity-driven devices;
 3. add adapters for Garmin Gear and Garmin Index Sleep;
-4. validate the remaining special trackers;
-5. retire legacy import/YAML support before the stable release once migration is complete.
+4. validate the remaining special trackers and complete real-cycle parity tests;
+5. decide the release packaging/path for the Lovelace card;
+6. retire legacy import/YAML support before the stable release once migration is complete.
 
 ## License
 
