@@ -64,6 +64,22 @@ Each tracker still has its own config entry, runtime/history, prediction, mainte
 
 Use `ui_group` for frontend grouping. Do not simulate grouping by pointing `linked_entity`, `battery_entity`, or `source_entity` at another Device Maintenance sensor.
 
+### Picture key
+
+`picture_key` is optional frontend metadata used by the dynamic Device Maintenance card to choose a picture from its `pictures` directory.
+
+New trackers default to a slug derived from the tracker name. Existing trackers can edit the picture key from the Home Assistant options flow without clearing runtime state or learned history. This is useful when a tracker has a more specific display name than the existing picture filename.
+
+Example:
+
+```text
+Tracker name: Oral B Genius Series D701 F2B0
+picture_key: braun_oral_b
+Picture file: braun_oral_b.jpeg
+```
+
+The picture key is the filename stem only; do not include `.jpeg`, `.png`, or another extension.
+
 ### Action label
 
 The action label describes what happened when the maintenance cycle is completed, for example:
@@ -142,6 +158,7 @@ or a new session may appear as:
 | Maintenance item | Yes | Built-in battery | What is charged/replaced/serviced |
 | Linked entity | No | — | Entity used to attach helper entities to a physical device |
 | UI group | No | — | Shared frontend grouping key for several trackers on one product |
+| Picture key | No | Slug of tracker name | Filename stem used by the dynamic card |
 | Quantity | For replaceable items | 1 | Number changed together |
 | Specification | Battery type required for replaceable battery; otherwise optional | — | Type/model/specification |
 | Source entity | Yes | — | Sensor whose numeric state is session duration in seconds |
@@ -178,6 +195,7 @@ Examples include charging a device, changing a filter, replacing a refill, chang
 | Maintenance item | Yes | Built-in battery | What is charged/replaced/serviced |
 | Linked entity | No | — | Entity used to attach helper entities to a physical device |
 | UI group | No | — | Shared frontend grouping key for several trackers on one product |
+| Picture key | No | Slug of tracker name | Filename stem used by the dynamic card |
 | Quantity | For replaceable items | 1 | Number changed together |
 | Specification | Battery type required for replaceable battery; otherwise optional | — | Type/model/specification |
 | Battery entity | No | — | Optional real percentage sensor |
@@ -273,7 +291,7 @@ Pressing the button registers the configured maintenance action and advances the
 
 ## Editing a tracker
 
-Mutable settings are exposed through the Home Assistant options flow. Maintenance item type, quantity, specification, linked entity, `ui_group`, battery entity, action text, learning interval, and history size can be edited without clearing runtime history.
+Mutable settings are exposed through the Home Assistant options flow. Maintenance item type, quantity, specification, linked entity, `ui_group`, `picture_key`, battery entity, action text, learning interval, and history size can be edited without clearing runtime history.
 
 For a built-in battery, quantity is normalized to 1 and specification is ignored.
 
