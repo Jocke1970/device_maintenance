@@ -4,7 +4,7 @@
 
 A Home Assistant custom integration for self-learning device maintenance, runtime tracking, battery cycles, and service intervals.
 
-> **Status:** `0.1.0-beta.2` is the current pre-release on the `beta` branch, intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.9`.
+> **Status:** `0.1.0-beta.2` is the current pre-release on the `beta` branch, intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.10`.
 
 Device Maintenance is being rebuilt from a collection of YAML helpers, template sensors, scripts, and automations into a proper Home Assistant helper integration with persistent runtime state and a strategy-based backend.
 
@@ -28,7 +28,7 @@ Current goals:
 ## Current versions
 
 - beta: `0.1.0-beta.2`
-- dev backend: `0.1.0-dev.9`
+- dev backend: `0.1.0-dev.10`
 - current development Lovelace card: `0.2.0-dev.8`
 
 The current backend provides:
@@ -39,6 +39,7 @@ The current backend provides:
 - one native action button per tracker;
 - stable `entry_id` metadata on both sensor and action button for dynamic frontend pairing;
 - optional `ui_group` metadata for combining multiple trackers into one frontend device card;
+- editable `picture_key` metadata so a tracker can reuse an existing Lovelace picture even when its display name differs from the image filename;
 - structured metadata for built-in batteries, replaceable batteries, filters, cartridges/refills, blades, CO₂ cylinders, and other maintenance items;
 - safer legacy metadata inference that avoids product-name false positives such as `OneBlade` being treated as a blade-replacement action;
 - optional explicit linking to a physical Home Assistant device through an entity;
@@ -99,6 +100,10 @@ Air Wick Batteribyte     ui_group: air_wick
 The backend still treats every row as an independent tracker. Grouping is presentation metadata only and must not be implemented by pointing `linked_entity`, `battery_entity`, or `source_entity` at another Device Maintenance tracker.
 
 The card derives a shared product title from the common beginning of grouped tracker names, keeps separate progress/prognosis/action rows, and localizes generic replacement metadata such as `cartridge` and `blade` for display.
+
+### Picture key
+
+The dynamic card looks up product pictures from its `pictures` directory. New trackers default `picture_key` to a slug of the tracker name, but the key can be edited later in the tracker options without resetting runtime or learned history. This lets a renamed or more specifically named tracker reuse an existing image, for example `Oral B Genius Series D701 F2B0` can use `picture_key: braun_oral_b`.
 
 New `elapsed` trackers also ask when the current maintenance cycle started. Choose **Now** when the action has just been performed, or enter the known previous action date/time so a tracker does not incorrectly start at zero age.
 
