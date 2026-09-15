@@ -105,13 +105,14 @@
     "step": {
       "init": {
         "title": "Device Maintenance settings",
-        "description": "Metadata can be edited without resetting learned history. Give trackers the same UI group to show them together in the dynamic card. Leave it blank for a separate card.",
+        "description": "Metadata can be edited without resetting learned history. Give trackers the same UI group to show them together in the dynamic card. The picture key is the filename without extension in the card's pictures directory.",
         "data": {
           "maintenance_item_type": "Battery / replacement item",
           "maintenance_item_quantity": "Quantity",
           "maintenance_item_specification": "Type / model / specification",
           "linked_entity": "Link to physical device through entity",
           "ui_group": "UI group",
+          "picture_key": "Picture key",
           "battery_entity": "Battery sensor",
           "action_label": "Maintenance action",
           "fallback_minutes": "Starting interval",
