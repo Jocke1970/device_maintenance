@@ -105,13 +105,14 @@
     "step": {
       "init": {
         "title": "Inställningar för Device Maintenance",
-        "description": "Metadata kan ändras utan att nollställa inlärd historik. Ange samma UI-grupp för trackers som ska visas tillsammans i det dynamiska kortet. Lämna tomt för ett eget kort.",
+        "description": "Metadata kan ändras utan att nollställa inlärd historik. Ange samma UI-grupp för trackers som ska visas tillsammans i det dynamiska kortet. Bildnyckeln är filnamnet utan ändelse i kortets pictures-katalog.",
         "data": {
           "maintenance_item_type": "Batteri / utbytesenhet",
           "maintenance_item_quantity": "Antal",
           "maintenance_item_specification": "Typ / modell / specifikation",
           "linked_entity": "Koppla till fysisk enhet via entitet",
           "ui_group": "UI-grupp",
+          "picture_key": "Bildnyckel",
           "battery_entity": "Batterisensor",
           "action_label": "Underhållsåtgärd",
           "fallback_minutes": "Startintervall",
