@@ -563,6 +563,17 @@ class DeviceMaintenanceOptionsFlow(OptionsFlowWithReload):
                 _infer_item_type_from_action(current.get(CONF_ACTION_LABEL)),
             )
         )
+        default_picture_key = str(
+            current.get(CONF_PICTURE_KEY)
+            or slugify(
+                str(
+                    self.config_entry.data.get(
+                        CONF_NAME,
+                        self.config_entry.title,
+                    )
+                )
+            )
+        )
 
         if user_input is not None:
             item_type = str(user_input[CONF_MAINTENANCE_ITEM_TYPE])
@@ -590,6 +601,9 @@ class DeviceMaintenanceOptionsFlow(OptionsFlowWithReload):
                 CONF_LINKED_ENTITY: user_input.get(CONF_LINKED_ENTITY),
                 CONF_UI_GROUP: _clean_optional_text(
                     user_input.get(CONF_UI_GROUP)
+                ),
+                CONF_PICTURE_KEY: _clean_optional_text(
+                    user_input.get(CONF_PICTURE_KEY, default_picture_key)
                 ),
                 CONF_BATTERY_ENTITY: user_input.get(CONF_BATTERY_ENTITY),
                 CONF_ACTION_LABEL: user_input[CONF_ACTION_LABEL],
@@ -646,6 +660,10 @@ class DeviceMaintenanceOptionsFlow(OptionsFlowWithReload):
                 description={
                     "suggested_value": current.get(CONF_UI_GROUP, "")
                 },
+            ): TextSelector(),
+            vol.Optional(
+                CONF_PICTURE_KEY,
+                description={"suggested_value": default_picture_key},
             ): TextSelector(),
             vol.Optional(
                 CONF_BATTERY_ENTITY,
