@@ -285,14 +285,14 @@ class DeviceMaintenanceManager:
         """Register one usage."""
         if not self.usage_enabled:
             return
-        self.state.usage_count += 1
+        self.state.usage_count = min(100000, self.state.usage_count + 1)
         await self._async_state_changed()
 
     async def async_set_usage_count(self, value: float) -> None:
         """Correct the current usage count."""
         if not self.usage_enabled:
             return
-        self.state.usage_count = max(0, int(round(value)))
+        self.state.usage_count = min(100000, max(0, int(round(value))))
         await self._async_state_changed()
 
     async def async_set_manual_battery_percent(self, value: float) -> None:
