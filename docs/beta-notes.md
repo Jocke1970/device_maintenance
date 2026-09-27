@@ -1,5 +1,35 @@
 # Beta notes
 
+## 0.1.0-beta.3
+
+This beta adds two independent optional capabilities for devices that are not fully connected to Home Assistant.
+
+### Added
+
+- battery source selection: none, Home Assistant battery sensor, or manually entered battery percentage;
+- native manual-battery number entity with persisted runtime state;
+- optional manual usage counting with a native `+1 usage` button;
+- editable current usage-count number for correcting missed or accidental increments;
+- persisted `usage_history` stored per tracker;
+- learned average usages per maintenance cycle after at least two completed non-zero cycles;
+- `expected_usage_count`, `usages_remaining`, sample count, and confidence metadata on the maintenance sensor;
+- capability settings are independent, so usage counting works without battery percentage and manual battery percentage works without usage counting;
+- existing trackers with a configured `battery_entity` remain compatible and are inferred as sensor-backed battery mode;
+- Python syntax compilation added to CI before beta promotion.
+
+### Behavior
+
+Registering the normal maintenance action still owns the maintenance-cycle boundary. If manual usage counting is enabled, the same action also archives the current non-zero usage count and resets it to zero. Battery percentage changes never register maintenance automatically.
+
+This supports devices where only usage count is observable, as well as devices where battery percentage can be read from the device display while uses are counted manually.
+
+### Known beta limitations
+
+- usage counting is manual only; automatic counting from a Home Assistant entity is planned for a later version;
+- manual battery percentage is contextual data and is not yet used to extrapolate battery drain per usage;
+- the separate development Lovelace card does not yet expose all new auxiliary controls; the native Home Assistant entities are the beta control surface.
+
+
 ## 0.1.0-beta.1
 
 This is the first Device Maintenance beta release.
