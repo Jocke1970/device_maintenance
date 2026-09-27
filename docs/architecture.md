@@ -22,6 +22,7 @@ custom_components/device_maintenance/
 ├── migration.py
 ├── sensor.py
 ├── button.py
+├── number.py
 ├── brand/
 │   ├── icon.png
 │   └── icon@2x.png
@@ -61,7 +62,9 @@ A config entry contains the stable definition of a tracker, for example:
 name
 strategy
 source_entity
+battery_mode
 battery_entity
+usage_mode
 linked_entity
 ui_group
 action_label
@@ -82,6 +85,9 @@ total_runtime_seconds
 baseline_runtime_seconds
 last_action
 history_seconds
+manual_battery_percent
+usage_count
+usage_history
 ```
 
 Runtime state is intentionally kept out of Git-backed YAML.
@@ -108,7 +114,7 @@ For each config entry:
 6. strategy changes are persisted through the shared store;
 7. unloading the entry stops listeners and flushes state.
 
-The manager owns integration-wide behavior such as battery metadata, presentation metadata, and entity notifications. The strategy owns the meaning of runtime and maintenance actions.
+The manager owns integration-wide behavior such as battery-source handling, usage counting and usage learning, presentation metadata, and entity notifications. The strategy owns the meaning of runtime and time-based maintenance intervals.
 
 ## Strategy contract
 
@@ -209,10 +215,18 @@ This keeps Device Maintenance focused on maintenance state rather than pretendin
 
 ## Native entities
 
-Each config entry currently creates:
+Each config entry always creates:
 
 - one sensor exposing maintenance state and learning metadata;
 - one button that registers the configured maintenance action.
+
+Optional capabilities may also create:
+
+- a manual battery-percentage number entity;
+- a manual usage-count number entity;
+- a +1 usage button.
+
+Usage-count history is owned by the manager and stored beside the normal runtime state. It is intentionally orthogonal to the time/runtime strategy, so a tracker can learn usages per maintenance cycle regardless of whether the main strategy is `elapsed` or `session_runtime`.
 
 The sensor exposes stable `entry_id` and `backend=device_maintenance` metadata so a frontend can discover trackers and pair them with their buttons without hard-coded entity IDs. It also exposes `ui_group` as optional presentation metadata.
 
