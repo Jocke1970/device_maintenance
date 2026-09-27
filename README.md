@@ -44,13 +44,14 @@ The current backend provides:
 - safer legacy metadata inference that avoids product-name false positives such as `OneBlade` being treated as a blade-replacement action;
 - optional explicit linking to a physical Home Assistant device through an entity;
 - an explicit initial last-action choice for new `elapsed` trackers (`Now` or a known date/time);
-- configurable battery source: none, Home Assistant percentage sensor, or manually entered battery percentage;\n- optional manual usage counting with a native `+1` action, editable current count, and learned usages-per-maintenance-cycle history;
+- configurable battery source: none, Home Assistant percentage sensor, or manually entered battery percentage;
+- optional manual usage counting with a native `+1` action, editable current count, and learned usages-per-maintenance-cycle history;
 - adaptive interval learning from recent completed cycles;
 - `session_runtime` and `elapsed` strategies;
 - state-safe legacy import for ordinary `elapsed` trackers;
 - English and Swedish translations;
 - local Home Assistant brand icons;
-- Hassfest and HACS validation in CI.
+- Python syntax compilation, Hassfest, and HACS validation in CI.
 
 The current development card dynamically discovers Device Maintenance sensors, pairs their action buttons through `entry_id`, renders pictures and maintenance metadata, sorts by urgency, and can combine several independent trackers into one product card through `ui_group`. Grouped presentation has been verified with Philips OneBlade (charge + blade replacement) and Air Wick (refill + battery replacement).
 
