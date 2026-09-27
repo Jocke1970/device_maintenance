@@ -29,7 +29,7 @@ Current goals:
 
 - beta: `0.1.0-beta.3`
 - dev backend: `0.1.0-dev.12`
-- current development Lovelace card: `0.2.0-dev.9`
+- current development Lovelace card: `0.2.0-dev.10`
 
 The current backend provides:
 
