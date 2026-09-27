@@ -58,7 +58,6 @@
         "description": "Summerar positiva förändringar från en sensor som visar drifttid för aktuell session.",
         "data": {
           "source_entity": "Sensor för sessionstid",
-          "battery_entity": "Batterisensor (valfri)",
           "action_label": "Underhållsåtgärd",
           "fallback_minutes": "Startintervall",
           "history_size": "Intervall att lära från",
@@ -69,7 +68,6 @@
         "title": "Tid sedan åtgärd",
         "description": "Mäter vanlig kalendertid mellan underhållsåtgärder.",
         "data": {
-          "battery_entity": "Batterisensor (valfri)",
           "action_label": "Underhållsåtgärd",
           "fallback_days": "Startintervall",
           "history_size": "Intervall att lära från"
@@ -88,6 +86,15 @@
         "data": {
           "initial_action_datetime": "Datum och tid"
         }
+      },
+      "capabilities": {
+        "title": "Batteri och användningsräkning",
+        "description": "Välj bara de tillval som är relevanta för enheten. Batteriinformation och användningsräkning är oberoende av varandra. Batterisensorn används endast när batterikällan är Home Assistant-sensor.",
+        "data": {
+          "battery_mode": "Batterikälla",
+          "battery_entity": "Batterisensor i Home Assistant (valfri)",
+          "usage_mode": "Användningsräkning"
+        }
       }
     },
     "abort": {
@@ -105,7 +112,7 @@
     "step": {
       "init": {
         "title": "Inställningar för Device Maintenance",
-        "description": "Metadata kan ändras utan att nollställa inlärd historik. Ange samma UI-grupp för trackers som ska visas tillsammans i det dynamiska kortet. Bildnyckeln är filnamnet utan ändelse i kortets pictures-katalog.",
+        "description": "Metadata kan ändras utan att nollställa inlärd historik. Batterikälla och användningsräkning är oberoende tillval. Manuell batterinivå och aktuellt användningsantal hanteras som egna entiteter. Ange samma UI-grupp för trackers som ska visas tillsammans. Bildnyckeln är filnamnet utan ändelse i kortets pictures-katalog.",
         "data": {
           "maintenance_item_type": "Batteri / utbytesenhet",
           "maintenance_item_quantity": "Antal",
@@ -113,12 +120,14 @@
           "linked_entity": "Koppla till fysisk enhet via entitet",
           "ui_group": "UI-grupp",
           "picture_key": "Bildnyckel",
-          "battery_entity": "Batterisensor",
+          "battery_entity": "Batterisensor i Home Assistant",
           "action_label": "Underhållsåtgärd",
           "fallback_minutes": "Startintervall",
           "fallback_days": "Startintervall",
           "history_size": "Intervall att lära från",
-          "max_session_seconds": "Maximal accepterad sessionsförändring"
+          "max_session_seconds": "Maximal accepterad sessionsförändring",
+          "battery_mode": "Batterikälla",
+          "usage_mode": "Användningsräkning"
         }
       }
     }
@@ -145,6 +154,19 @@
       "options": {
         "now": "Nu",
         "custom": "Ange datum/tid"
+      }
+    },
+    "battery_mode": {
+      "options": {
+        "none": "Ingen batteriinformation",
+        "entity": "Home Assistant-sensor",
+        "manual": "Manuell batterinivå"
+      }
+    },
+    "usage_mode": {
+      "options": {
+        "none": "Av",
+        "manual": "Manuell +1-räkning"
       }
     }
   }
