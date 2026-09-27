@@ -69,6 +69,8 @@ class DeviceMaintenanceSensor(SensorEntity):
         snapshot = self.manager.snapshot
         strategy = self.manager.entry.data.get(CONF_STRATEGY)
         battery = self.manager.battery_percent
+        expected_usage = self.manager.expected_usage_count
+        remaining_usage = self.manager.usages_remaining
         attrs = {
             "backend": "device_maintenance",
             "entry_id": self.manager.entry.entry_id,
@@ -77,13 +79,25 @@ class DeviceMaintenanceSensor(SensorEntity):
             "action_label": self.manager.action_label,
             "action_icon": self.manager.action_icon,
             "picture_key": self.manager.picture_key or slugify(self.manager.name),
+            "ui_group": self.manager.ui_group or None,
             "maintenance_item_type": self.manager.maintenance_item_type,
             "maintenance_item_quantity": self.manager.maintenance_item_quantity,
             "maintenance_item_specification": self.manager.maintenance_item_specification,
             "maintenance_item_summary": self.manager.maintenance_item_summary,
             "battery_type": self.manager.legacy_battery_type,
+            "battery_mode": self.manager.battery_mode,
             "battery_entity": self.manager.battery_entity_id,
             "battery_percent": round(battery) if battery is not None else None,
+            "usage_mode": self.manager.usage_mode,
+            "usage_count": self.manager.state.usage_count if self.manager.usage_enabled else None,
+            "usage_sample_count": self.manager.usage_sample_count if self.manager.usage_enabled else 0,
+            "usage_confidence": self.manager.usage_confidence if self.manager.usage_enabled else None,
+            "expected_usage_count": (
+                round(expected_usage, 1) if expected_usage is not None else None
+            ),
+            "usages_remaining": (
+                round(remaining_usage, 1) if remaining_usage is not None else None
+            ),
             "linked_entity": self.manager.explicit_linked_entity_id,
             "source_entity": self.manager.source_entity_id,
             "source_available": snapshot.source_available,

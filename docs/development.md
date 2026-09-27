@@ -92,6 +92,7 @@ The repository uses GitHub Actions validation.
 
 Current checks include:
 
+- Python syntax compilation;
 - Home Assistant Hassfest;
 - HACS validation.
 
@@ -154,6 +155,8 @@ Before promoting a meaningful backend change, verify:
 - no accidental runtime is added on startup;
 - state survives restart;
 - history is not double-booked;
+- optional usage cycles archive only once and reset the current count safely;
+- manual battery values persist without registering maintenance actions;
 - deletion removes only the correct entry state;
 - invalid source states do not corrupt totals;
 - options reload cleanly;

@@ -12,6 +12,15 @@ on:
       - main
 
 jobs:
+  python:
+    name: Python syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Compile integration
+        run: python -m compileall -q custom_components/device_maintenance
+
   hassfest:
     name: Hassfest
     runs-on: ubuntu-latest

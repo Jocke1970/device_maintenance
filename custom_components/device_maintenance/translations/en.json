@@ -19,10 +19,11 @@
       },
       "maintenance_item": {
         "title": "What is maintained or replaced?",
-        "description": "Describe the maintenance/replacement item itself. A battery percentage sensor is separate and selected later. You can also link the tracker to a physical Home Assistant device through any entity.",
+        "description": "Describe the maintenance/replacement item itself. A battery percentage sensor is separate and selected later. You can link the tracker to a physical Home Assistant device and, when needed, give multiple trackers the same UI group so they are shown as one card.",
         "data": {
           "maintenance_item_type": "Battery / replacement item",
-          "linked_entity": "Link to physical device through entity (optional)"
+          "linked_entity": "Link to physical device through entity (optional)",
+          "ui_group": "UI group (optional)"
         }
       },
       "battery_details": {
@@ -57,7 +58,6 @@
         "description": "Accumulate positive changes from a sensor that reports runtime for the current session.",
         "data": {
           "source_entity": "Session runtime sensor",
-          "battery_entity": "Battery sensor (optional)",
           "action_label": "Maintenance action",
           "fallback_minutes": "Starting interval",
           "history_size": "Intervals to learn from",
@@ -68,7 +68,6 @@
         "title": "Elapsed time",
         "description": "Track wall-clock time between maintenance actions.",
         "data": {
-          "battery_entity": "Battery sensor (optional)",
           "action_label": "Maintenance action",
           "fallback_days": "Starting interval",
           "history_size": "Intervals to learn from"
@@ -87,6 +86,15 @@
         "data": {
           "initial_action_datetime": "Date and time"
         }
+      },
+      "capabilities": {
+        "title": "Battery and usage counting",
+        "description": "Enable only the capabilities that apply to this device. Battery information and usage counting are independent. The battery entity is used only when the battery source is a Home Assistant sensor.",
+        "data": {
+          "battery_mode": "Battery source",
+          "battery_entity": "Home Assistant battery sensor (optional)",
+          "usage_mode": "Usage counting"
+        }
       }
     },
     "abort": {
@@ -104,18 +112,22 @@
     "step": {
       "init": {
         "title": "Device Maintenance settings",
-        "description": "Maintenance-item metadata can be edited without resetting learned history. Quantity and specification are ignored for a built-in battery.",
+        "description": "Metadata can be edited without resetting learned history. Battery source and usage counting are independent capabilities. Manual battery level and the current usage count are handled through dedicated entities. Give trackers the same UI group to show them together. The picture key is the filename without extension in the card's pictures directory.",
         "data": {
           "maintenance_item_type": "Battery / replacement item",
           "maintenance_item_quantity": "Quantity",
           "maintenance_item_specification": "Type / model / specification",
           "linked_entity": "Link to physical device through entity",
-          "battery_entity": "Battery sensor",
+          "ui_group": "UI group",
+          "picture_key": "Picture key",
+          "battery_entity": "Home Assistant battery sensor",
           "action_label": "Maintenance action",
           "fallback_minutes": "Starting interval",
           "fallback_days": "Starting interval",
           "history_size": "Intervals to learn from",
-          "max_session_seconds": "Maximum accepted session delta"
+          "max_session_seconds": "Maximum accepted session delta",
+          "battery_mode": "Battery source",
+          "usage_mode": "Usage counting"
         }
       }
     }
@@ -142,6 +154,19 @@
       "options": {
         "now": "Now",
         "custom": "Enter date/time"
+      }
+    },
+    "battery_mode": {
+      "options": {
+        "none": "No battery information",
+        "entity": "Home Assistant sensor",
+        "manual": "Manual battery level"
+      }
+    },
+    "usage_mode": {
+      "options": {
+        "none": "Off",
+        "manual": "Manual +1 counting"
       }
     }
   }

@@ -19,8 +19,13 @@ custom_components/device_maintenance/
 ├── store.py
 ├── manager.py
 ├── config_flow.py
+├── migration.py
 ├── sensor.py
 ├── button.py
+├── number.py
+├── brand/
+│   ├── icon.png
+│   └── icon@2x.png
 ├── translations/
 │   ├── en.json
 │   └── sv.json
@@ -57,12 +62,21 @@ A config entry contains the stable definition of a tracker, for example:
 name
 strategy
 source_entity
+battery_mode
 battery_entity
+usage_mode
+linked_entity
+ui_group
 action_label
+maintenance_item_type
+maintenance_item_quantity
+maintenance_item_specification
 fallback_interval
 history_size
 strategy-specific settings
 ```
+
+`ui_group` is presentation metadata only. Two trackers that share a `ui_group` remain separate config entries with separate runtime/history and action buttons.
 
 Runtime state contains values that change while Home Assistant runs:
 
@@ -71,6 +85,9 @@ total_runtime_seconds
 baseline_runtime_seconds
 last_action
 history_seconds
+manual_battery_percent
+usage_count
+usage_history
 ```
 
 Runtime state is intentionally kept out of Git-backed YAML.
@@ -97,7 +114,7 @@ For each config entry:
 6. strategy changes are persisted through the shared store;
 7. unloading the entry stops listeners and flushes state.
 
-The manager owns integration-wide behavior such as battery metadata and entity notifications. The strategy owns the meaning of runtime and maintenance actions.
+The manager owns integration-wide behavior such as battery-source handling, usage counting and usage learning, presentation metadata, and entity notifications. The strategy owns the meaning of runtime and time-based maintenance intervals.
 
 ## Strategy contract
 
@@ -188,34 +205,59 @@ Index Sleep specifically requires parity with delayed sleep booking and correcti
 
 Device Maintenance must not claim ownership of a physical device created by another integration.
 
-When a source or battery entity belongs to an existing device, Device Maintenance helper entities link directly to that source device.
+When a source, battery entity, or explicitly selected linked entity belongs to an existing device, Device Maintenance helper entities link directly to that source device.
 
 A maintenance tracker with no source device may remain unlinked rather than creating a duplicate representation of a physical device.
+
+`linked_entity` is for physical device attachment only. It must not be used to group maintenance trackers, and it should not point to the tracker's own Device Maintenance sensor or to another Device Maintenance maintenance sensor. The same rule applies to `battery_entity` and, unless a future strategy explicitly defines otherwise, `source_entity`.
 
 This keeps Device Maintenance focused on maintenance state rather than pretending to be the hardware integration.
 
 ## Native entities
 
-Each config entry currently creates:
+Each config entry always creates:
 
 - one sensor exposing maintenance state and learning metadata;
 - one button that registers the configured maintenance action.
 
-The sensor keeps compatibility-oriented attributes needed by the existing Device Maintenance Lovelace card during migration.
+Optional capabilities may also create:
 
-The button is deliberately the mutation boundary for normal maintenance actions. The frontend should call backend actions rather than alter baselines or history itself.
+- a manual battery-percentage number entity;
+- a manual usage-count number entity;
+- a +1 usage button.
+
+Usage-count history is owned by the manager and stored beside the normal runtime state. It is intentionally orthogonal to the time/runtime strategy, so a tracker can learn usages per maintenance cycle regardless of whether the main strategy is `elapsed` or `session_runtime`.
+
+The sensor exposes stable `entry_id` and `backend=device_maintenance` metadata so a frontend can discover trackers and pair them with their buttons without hard-coded entity IDs. It also exposes `ui_group` as optional presentation metadata.
+
+The button is deliberately the mutation boundary for normal maintenance actions. The frontend calls backend actions rather than altering baselines or history itself.
 
 ## Frontend boundary
 
-The existing custom card remains usable during migration. Later it should become a UI client for the integration rather than the owner of maintenance logic.
+The dynamic Device Maintenance Lovelace card is now a thin client of the integration-native sensor/button contract rather than the owner of maintenance logic.
 
-Planned frontend responsibilities:
+Current development-card behavior (`0.2.0-dev.9`) includes:
+
+- dynamic discovery of Device Maintenance sensors;
+- action-button pairing by `entry_id`;
+- urgency sorting and show-all filtering;
+- optional product pictures with fallback icons;
+- maintenance category, age/runtime, remaining estimate, confidence, item metadata, and battery context;
+- explicit grouping through shared `ui_group` values;
+- a common product title for grouped trackers while preserving separate child rows/actions;
+- desktop/mobile presentation;
+- localized display labels for generic maintenance-item metadata.
+
+Grouped presentation has been verified with OneBlade (charge + blade replacement) and Air Wick (refill + battery replacement).
+
+The card is currently developed as a separate Lovelace resource while the integration backend remains in this repository. Release packaging for the card is still an open decision.
+
+The frontend may:
 
 - list and group trackers;
-- launch add/edit flows;
-- register a maintenance action;
-- upload or select an optional picture;
-- display learned interval, runtime/age, remaining estimate, and battery state.
+- display state, metadata, prognosis, and pictures;
+- register a maintenance action through the native button entity;
+- later launch add/edit/delete flows.
 
 The frontend must not own:
 
@@ -227,8 +269,24 @@ The frontend must not own:
 
 Those remain backend responsibilities.
 
+## Grouping model
+
+Grouping does not change the backend object model. The relationship is:
+
+```text
+physical product
+  ├── maintenance tracker A (ConfigEntry, Store state, button)
+  └── maintenance tracker B (ConfigEntry, Store state, button)
+            ↑
+       same ui_group
+```
+
+The shared `ui_group` tells the frontend only that the trackers may be presented as one product card. It does not create a shared baseline, shared learning history, or shared action.
+
+This distinction is important because one product may have unrelated maintenance intervals, for example charging an internal battery every few months while replacing a blade on a different schedule.
+
 ## Compatibility during migration
 
-The integration intentionally exposes metadata that resembles the existing YAML sensor contract so the current card can be adapted incrementally.
+The integration intentionally exposes compatibility-oriented metadata required by the dynamic Device Maintenance card and by state-safe migration diagnostics.
 
-Compatibility is temporary. Once every legacy tracker has been migrated and the card consumes integration-native state directly, obsolete compatibility attributes can be removed in a versioned change.
+Compatibility remains versioned. Once every legacy tracker has been migrated and the frontend/release contract is finalized, obsolete compatibility attributes can be removed only through an explicit versioned change.

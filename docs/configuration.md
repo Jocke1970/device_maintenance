@@ -6,7 +6,7 @@ Each tracked maintenance item is represented by one Home Assistant config entry.
 
 ### Maintenance / replacement item
 
-The tracker now stores structured metadata about the item being maintained. This is deliberately separate from the sensor that may report battery percentage.
+The tracker stores structured metadata about the item being maintained. This is deliberately separate from the sensor that may report battery percentage.
 
 Supported item types are:
 
@@ -27,7 +27,7 @@ Built-in battery
 2 × AA
 1 × CR2032
 1 × HEPA H13
-1 × QP6652 blade
+1 × QP420 blade
 ```
 
 The maintenance sensor exposes stable machine-readable attributes:
@@ -39,13 +39,46 @@ maintenance_item_specification
 maintenance_item_summary
 ```
 
-For compatibility with the existing Device Maintenance card, replaceable-battery trackers also expose a derived `battery_type` attribute such as `2 × AA`.
+For compatibility with the Device Maintenance card, replaceable-battery trackers also expose a derived `battery_type` attribute such as `2 × AA`.
 
 ### Linked entity
 
 A tracker can optionally be linked to a physical Home Assistant device through any entity belonging to that device. This is useful for `elapsed` trackers that have no runtime source and may not have a battery sensor.
 
 The explicit linked entity is preferred for device attachment. If it is not configured, Device Maintenance falls back to the runtime source entity and then the battery percentage entity.
+
+`linked_entity` is **device attachment metadata**, not a grouping mechanism. It should not point to the tracker's own Device Maintenance sensor or to another Device Maintenance tracker. If there is no real physical entity to attach to, leaving the field empty is correct.
+
+### UI group
+
+`ui_group` is optional presentation metadata. Give several independent trackers the same exact value when they belong to one physical product and should be shown together by the dynamic card.
+
+Example:
+
+```text
+OneBlade QP6652          ui_group: oneblade_qp6652
+OneBlade QP6652 Bladbyte ui_group: oneblade_qp6652
+```
+
+Each tracker still has its own config entry, runtime/history, prediction, maintenance item, and action button. Changing `ui_group` does not merge backend state and does not reset learned history.
+
+Use `ui_group` for frontend grouping. Do not simulate grouping by pointing `linked_entity`, `battery_entity`, or `source_entity` at another Device Maintenance sensor.
+
+### Picture key
+
+`picture_key` is optional frontend metadata used by the dynamic Device Maintenance card to choose a picture from its `pictures` directory.
+
+New trackers default to a slug derived from the tracker name. Existing trackers can edit the picture key from the Home Assistant options flow without clearing runtime state or learned history. This is useful when a tracker has a more specific display name than the existing picture filename.
+
+Example:
+
+```text
+Tracker name: Oral B Genius Series D701 F2B0
+picture_key: braun_oral_b
+Picture file: braun_oral_b.jpeg
+```
+
+The picture key is the filename stem only; do not include `.jpeg`, `.png`, or another extension.
 
 ### Action label
 
@@ -81,13 +114,38 @@ The default history size is 5. The oldest sample is discarded when the configure
 
 Intervals shorter than 60 seconds are not stored as learning samples.
 
-### Battery entity
+### Battery source
 
-A tracker can optionally reference a battery percentage sensor. Device Maintenance exposes the current battery entity and percentage as sensor attributes for UI consumers.
+Battery information is an optional capability and is independent of the maintenance item and usage counting.
 
-This is different from the maintenance item. A tracker can describe a built-in battery even when no percentage sensor exists, or it can describe a replaceable battery while separately reading its current battery percentage from Home Assistant.
+Available modes are:
 
-Battery state does not currently alter the learned runtime interval in the Python backend; it is exposed as additional maintenance context.
+- **None** — the tracker exposes no battery percentage;
+- **Home Assistant sensor** — read percentage from a real battery sensor;
+- **Manual battery level** — create an editable number entity from 0–100 %.
+
+Manual battery percentage is stored in Device Maintenance runtime state, not in the config entry. Changing the value does not register a maintenance action and does not alter interval history.
+
+The battery entity is used only in Home Assistant sensor mode. It must not point to the tracker itself or to another Device Maintenance maintenance sensor.
+
+Battery percentage is context only in this beta. It does not automatically infer that a charge or battery replacement occurred.
+
+### Usage counting
+
+Usage counting is another independent optional capability. The current beta provides manual counting.
+
+When enabled, the tracker creates:
+
+- a **+1 usage** button;
+- an editable **current usage count** number for corrections.
+
+The current count is persisted in runtime state. Pressing the normal maintenance action closes the current usage cycle: a non-zero count is appended to `usage_history`, the current count resets to zero, and older usage samples are trimmed to the tracker's configured history size.
+
+Usage prediction starts after two completed non-zero cycles. The sensor then exposes the arithmetic mean as `expected_usage_count` and the difference between that value and the current count as `usages_remaining`.
+
+A zero-use maintenance action is not added to usage history. This avoids teaching the model from accidental or immediately repeated maintenance actions.
+
+Disabling usage counting does not erase stored usage state; re-enabling it resumes from the persisted values.
 
 ### Initial last action
 
@@ -121,11 +179,15 @@ or a new session may appear as:
 | Name | Yes | — | Display name of the tracker |
 | Strategy | Yes | `session_runtime` | Runtime strategy |
 | Maintenance item | Yes | Built-in battery | What is charged/replaced/serviced |
-| Linked entity | No | — | Entity used to attach the helper entities to a physical device |
+| Linked entity | No | — | Entity used to attach helper entities to a physical device |
+| UI group | No | — | Shared frontend grouping key for several trackers on one product |
+| Picture key | No | Slug of tracker name | Filename stem used by the dynamic card |
 | Quantity | For replaceable items | 1 | Number changed together |
 | Specification | Battery type required for replaceable battery; otherwise optional | — | Type/model/specification |
 | Source entity | Yes | — | Sensor whose numeric state is session duration in seconds |
-| Battery entity | No | — | Optional percentage sensor |
+| Battery source | No | None | None, Home Assistant sensor, or manual percentage |
+| Battery entity | Only for sensor mode | — | Real percentage sensor used by battery source |
+| Usage counting | No | Off | Optional manual +1 counting and learned uses per maintenance cycle |
 | Action label | Yes | Based on item type | Text used for the maintenance action |
 | Start interval | Yes | 90 min | Used before learning has enough history |
 | History size | Yes | 5 | Number of recent completed intervals retained |
@@ -156,10 +218,14 @@ Examples include charging a device, changing a filter, replacing a refill, chang
 | Name | Yes | — | Display name of the tracker |
 | Strategy | Yes | `elapsed` | Wall-clock strategy |
 | Maintenance item | Yes | Built-in battery | What is charged/replaced/serviced |
-| Linked entity | No | — | Entity used to attach the helper entities to a physical device |
+| Linked entity | No | — | Entity used to attach helper entities to a physical device |
+| UI group | No | — | Shared frontend grouping key for several trackers on one product |
+| Picture key | No | Slug of tracker name | Filename stem used by the dynamic card |
 | Quantity | For replaceable items | 1 | Number changed together |
 | Specification | Battery type required for replaceable battery; otherwise optional | — | Type/model/specification |
-| Battery entity | No | — | Optional percentage sensor |
+| Battery source | No | None | None, Home Assistant sensor, or manual percentage |
+| Battery entity | Only for sensor mode | — | Real percentage sensor used by battery source |
+| Usage counting | No | Off | Optional manual +1 counting and learned uses per maintenance cycle |
 | Action label | Yes | Based on item type | Text used for the maintenance action |
 | Start interval | Yes | 7 days | Used before learning has enough history |
 | History size | Yes | 5 | Number of recent completed intervals retained |
@@ -169,20 +235,23 @@ Registering the maintenance action stores the elapsed interval, records the new 
 
 ## Legacy import
 
-The first migration implementation imports ordinary legacy `elapsed` trackers. In addition to last-action time, history, action label, fallback interval, and battery sensor, it now attempts to preserve replacement-item metadata.
+The first migration implementation imports ordinary legacy `elapsed` trackers. In addition to last-action time, history, action label, fallback interval, and battery sensor, it attempts to preserve replacement-item metadata.
 
 Import inference is intentionally conservative:
 
 - an existing `battery_type` such as `2 × AA` becomes a replaceable-battery item;
 - action/name text containing charge/laddning is treated as a built-in battery;
 - battery replacement, filter, cartridge/refill, blade, and CO₂ wording are mapped to the corresponding generic item type;
+- product names alone are not enough to infer a replacement action (`OneBlade` must not become a blade-replacement tracker simply because of its product name);
 - unknown cases are imported as `other` and can be corrected in the options flow.
 
 The import preview is non-destructive. Legacy helpers and sensors are not deleted or changed.
 
+After import, verify entity-reference metadata as well as visible age/history. `battery_entity`, `linked_entity`, and `source_entity` should resolve to the intended real source/device entities and must not accidentally point back to Device Maintenance helper sensors.
+
 ## Native entities
 
-Each tracker currently creates two entities.
+Each tracker always creates a maintenance sensor and maintenance-action button. Optional capabilities can add auxiliary entities.
 
 ### Maintenance sensor
 
@@ -204,6 +273,9 @@ strategy
 action_label
 action_icon
 picture_key
+ui_group
+battery_mode
+usage_mode
 maintenance_item_type
 maintenance_item_quantity
 maintenance_item_specification
@@ -211,6 +283,11 @@ maintenance_item_summary
 battery_type
 battery_entity
 battery_percent
+usage_count
+usage_sample_count
+usage_confidence
+expected_usage_count
+usages_remaining
 linked_entity
 source_entity
 source_available
@@ -236,6 +313,10 @@ expected_interval_days
 days_remaining
 ```
 
+### Optional capability entities
+
+Manual battery mode adds a number entity for battery percentage. Manual usage mode adds a `+1 usage` button and an editable current-usage number. These auxiliary entities share the same config-entry identity but remain separate from the normal maintenance-action button.
+
 ### Action button
 
 Suggested entity ID:
@@ -248,11 +329,26 @@ Pressing the button registers the configured maintenance action and advances the
 
 ## Editing a tracker
 
-Mutable settings are exposed through the Home Assistant options flow. Maintenance item type, quantity, specification, linked entity, battery entity, action text, learning interval, and history size can be edited without clearing runtime history.
+Mutable settings are exposed through the Home Assistant options flow. Maintenance item type, quantity, specification, linked entity, `ui_group`, `picture_key`, battery source, battery entity, usage-count mode, action text, learning interval, and history size can be edited without clearing runtime history.
 
 For a built-in battery, quantity is normalized to 1 and specification is ignored.
 
 Strategy identity and the primary runtime source definition are intentionally treated as structural configuration in the current development version. If a structural change is required during early development, removing and recreating the tracker may be safer than silently changing the meaning of existing runtime history.
+
+## Dynamic card contract
+
+The development Device Maintenance card discovers integration-native sensors through `backend=device_maintenance`, pairs action buttons by `entry_id`, and uses `ui_group` only for presentation grouping.
+
+Current grouped-card behavior includes:
+
+- one shared product title and picture;
+- one row per independent maintenance tracker;
+- separate urgency/progress, prognosis, metadata, and action button per row;
+- a group status derived from the most urgent child tracker;
+- localized display text for generic replacement-item metadata;
+- responsive desktop/mobile layout.
+
+Grouped presentation has been verified with OneBlade (charge + blade) and Air Wick (refill + battery).
 
 ## Planned configuration types
 
