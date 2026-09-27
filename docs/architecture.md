@@ -236,7 +236,7 @@ The button is deliberately the mutation boundary for normal maintenance actions.
 
 The dynamic Device Maintenance Lovelace card is now a thin client of the integration-native sensor/button contract rather than the owner of maintenance logic.
 
-Current development-card behavior (`0.2.0-dev.8`) includes:
+Current development-card behavior (`0.2.0-dev.9`) includes:
 
 - dynamic discovery of Device Maintenance sensors;
 - action-button pairing by `entry_id`;
