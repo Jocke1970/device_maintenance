@@ -114,15 +114,38 @@ The default history size is 5. The oldest sample is discarded when the configure
 
 Intervals shorter than 60 seconds are not stored as learning samples.
 
-### Battery entity
+### Battery source
 
-A tracker can optionally reference a real battery percentage sensor. Device Maintenance exposes the current battery entity and percentage as sensor attributes for UI consumers.
+Battery information is an optional capability and is independent of the maintenance item and usage counting.
 
-This is different from the maintenance item. A tracker can describe a built-in battery even when no percentage sensor exists, or it can describe a replaceable battery while separately reading its current battery percentage from Home Assistant.
+Available modes are:
 
-The battery entity must not point to the tracker itself or to another Device Maintenance maintenance sensor. During migration cleanup this kind of accidental reference was found to produce bogus battery metadata. Clear the field when no real percentage sensor exists.
+- **None** — the tracker exposes no battery percentage;
+- **Home Assistant sensor** — read percentage from a real battery sensor;
+- **Manual battery level** — create an editable number entity from 0–100 %.
 
-Battery state does not currently alter the learned runtime interval in the Python backend; it is exposed as additional maintenance context.
+Manual battery percentage is stored in Device Maintenance runtime state, not in the config entry. Changing the value does not register a maintenance action and does not alter interval history.
+
+The battery entity is used only in Home Assistant sensor mode. It must not point to the tracker itself or to another Device Maintenance maintenance sensor.
+
+Battery percentage is context only in this beta. It does not automatically infer that a charge or battery replacement occurred.
+
+### Usage counting
+
+Usage counting is another independent optional capability. The current beta provides manual counting.
+
+When enabled, the tracker creates:
+
+- a **+1 usage** button;
+- an editable **current usage count** number for corrections.
+
+The current count is persisted in runtime state. Pressing the normal maintenance action closes the current usage cycle: a non-zero count is appended to `usage_history`, the current count resets to zero, and older usage samples are trimmed to the tracker's configured history size.
+
+Usage prediction starts after two completed non-zero cycles. The sensor then exposes the arithmetic mean as `expected_usage_count` and the difference between that value and the current count as `usages_remaining`.
+
+A zero-use maintenance action is not added to usage history. This avoids teaching the model from accidental or immediately repeated maintenance actions.
+
+Disabling usage counting does not erase stored usage state; re-enabling it resumes from the persisted values.
 
 ### Initial last action
 
@@ -162,7 +185,9 @@ or a new session may appear as:
 | Quantity | For replaceable items | 1 | Number changed together |
 | Specification | Battery type required for replaceable battery; otherwise optional | — | Type/model/specification |
 | Source entity | Yes | — | Sensor whose numeric state is session duration in seconds |
-| Battery entity | No | — | Optional real percentage sensor |
+| Battery source | No | None | None, Home Assistant sensor, or manual percentage |
+| Battery entity | Only for sensor mode | — | Real percentage sensor used by battery source |
+| Usage counting | No | Off | Optional manual +1 counting and learned uses per maintenance cycle |
 | Action label | Yes | Based on item type | Text used for the maintenance action |
 | Start interval | Yes | 90 min | Used before learning has enough history |
 | History size | Yes | 5 | Number of recent completed intervals retained |
@@ -198,7 +223,9 @@ Examples include charging a device, changing a filter, replacing a refill, chang
 | Picture key | No | Slug of tracker name | Filename stem used by the dynamic card |
 | Quantity | For replaceable items | 1 | Number changed together |
 | Specification | Battery type required for replaceable battery; otherwise optional | — | Type/model/specification |
-| Battery entity | No | — | Optional real percentage sensor |
+| Battery source | No | None | None, Home Assistant sensor, or manual percentage |
+| Battery entity | Only for sensor mode | — | Real percentage sensor used by battery source |
+| Usage counting | No | Off | Optional manual +1 counting and learned uses per maintenance cycle |
 | Action label | Yes | Based on item type | Text used for the maintenance action |
 | Start interval | Yes | 7 days | Used before learning has enough history |
 | History size | Yes | 5 | Number of recent completed intervals retained |
@@ -224,7 +251,7 @@ After import, verify entity-reference metadata as well as visible age/history. `
 
 ## Native entities
 
-Each tracker currently creates two entities.
+Each tracker always creates a maintenance sensor and maintenance-action button. Optional capabilities can add auxiliary entities.
 
 ### Maintenance sensor
 
@@ -247,6 +274,8 @@ action_label
 action_icon
 picture_key
 ui_group
+battery_mode
+usage_mode
 maintenance_item_type
 maintenance_item_quantity
 maintenance_item_specification
@@ -254,6 +283,11 @@ maintenance_item_summary
 battery_type
 battery_entity
 battery_percent
+usage_count
+usage_sample_count
+usage_confidence
+expected_usage_count
+usages_remaining
 linked_entity
 source_entity
 source_available
@@ -279,6 +313,10 @@ expected_interval_days
 days_remaining
 ```
 
+### Optional capability entities
+
+Manual battery mode adds a number entity for battery percentage. Manual usage mode adds a `+1 usage` button and an editable current-usage number. These auxiliary entities share the same config-entry identity but remain separate from the normal maintenance-action button.
+
 ### Action button
 
 Suggested entity ID:
@@ -291,7 +329,7 @@ Pressing the button registers the configured maintenance action and advances the
 
 ## Editing a tracker
 
-Mutable settings are exposed through the Home Assistant options flow. Maintenance item type, quantity, specification, linked entity, `ui_group`, `picture_key`, battery entity, action text, learning interval, and history size can be edited without clearing runtime history.
+Mutable settings are exposed through the Home Assistant options flow. Maintenance item type, quantity, specification, linked entity, `ui_group`, `picture_key`, battery source, battery entity, usage-count mode, action text, learning interval, and history size can be edited without clearing runtime history.
 
 For a built-in battery, quantity is normalized to 1 and specification is ignored.
 
