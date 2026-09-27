@@ -4,7 +4,7 @@
 
 A Home Assistant custom integration for self-learning device maintenance, runtime tracking, battery cycles, and service intervals.
 
-> **Status:** `0.1.0-beta.2` is the current pre-release on the `beta` branch, intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.10`.
+> **Status:** `0.1.0-beta.2` is the current pre-release on the `beta` branch, intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.11`.
 
 Device Maintenance is being rebuilt from a collection of YAML helpers, template sensors, scripts, and automations into a proper Home Assistant helper integration with persistent runtime state and a strategy-based backend.
 
@@ -28,7 +28,7 @@ Current goals:
 ## Current versions
 
 - beta: `0.1.0-beta.2`
-- dev backend: `0.1.0-dev.10`
+- dev backend: `0.1.0-dev.11`
 - current development Lovelace card: `0.2.0-dev.8`
 
 The current backend provides:
@@ -44,7 +44,7 @@ The current backend provides:
 - safer legacy metadata inference that avoids product-name false positives such as `OneBlade` being treated as a blade-replacement action;
 - optional explicit linking to a physical Home Assistant device through an entity;
 - an explicit initial last-action choice for new `elapsed` trackers (`Now` or a known date/time);
-- battery metadata support;
+- configurable battery source: none, Home Assistant percentage sensor, or manually entered battery percentage;\n- optional manual usage counting with a native `+1` action, editable current count, and learned usages-per-maintenance-cycle history;
 - adaptive interval learning from recent completed cycles;
 - `session_runtime` and `elapsed` strategies;
 - state-safe legacy import for ordinary `elapsed` trackers;
@@ -81,7 +81,13 @@ A tracker describes both **how the interval is measured** and **what is actually
 - CO₂ cylinder;
 - another custom replacement item.
 
-The optional battery percentage sensor is separate metadata. An `elapsed` tracker can also be explicitly linked to a physical Home Assistant device through any entity belonging to that device.
+Battery information is an independent capability. A tracker can use no battery percentage, a Home Assistant battery sensor, or a manually entered battery percentage. Manual battery percentage is runtime state exposed through a native number entity, so it can be updated without reopening tracker configuration.
+
+Usage counting is also independent. When manual usage counting is enabled, Device Maintenance creates a `+1 usage` button and an editable current-count number. Registering the normal maintenance action archives the non-zero usage count for that completed cycle, resets the current count, and learns the average number of usages per maintenance cycle once at least two samples exist.
+
+This allows, for example, a device with no visible battery percentage to learn from usage count alone, while another device can combine manually observed battery percentage with usage counting.
+
+An `elapsed` tracker can also be explicitly linked to a physical Home Assistant device through any entity belonging to that device.
 
 ### UI grouping
 
