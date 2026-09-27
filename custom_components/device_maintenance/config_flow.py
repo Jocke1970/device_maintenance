@@ -27,8 +27,12 @@ from homeassistant.util import slugify
 
 from .const import (
     ACTION_LABEL_BY_ITEM_TYPE,
+    BATTERY_MODE_ENTITY,
+    BATTERY_MODE_NONE,
+    BATTERY_MODES,
     CONF_ACTION_LABEL,
     CONF_BATTERY_ENTITY,
+    CONF_BATTERY_MODE,
     CONF_FALLBACK_INTERVAL_SECONDS,
     CONF_HISTORY_SIZE,
     CONF_INITIAL_ACTION_DATETIME,
@@ -45,13 +49,16 @@ from .const import (
     CONF_SOURCE_ENTITY,
     CONF_STRATEGY,
     CONF_UI_GROUP,
+    CONF_USAGE_MODE,
     DEFAULT_ACTION_LABEL,
+    DEFAULT_BATTERY_MODE,
     DEFAULT_ELAPSED_FALLBACK_SECONDS,
     DEFAULT_HISTORY_SIZE,
     DEFAULT_MAINTENANCE_ITEM_QUANTITY,
     DEFAULT_MAINTENANCE_ITEM_TYPE,
     DEFAULT_MAX_SESSION_SECONDS,
     DEFAULT_RUNTIME_FALLBACK_SECONDS,
+    DEFAULT_USAGE_MODE,
     DOMAIN,
     INITIAL_ACTION_CUSTOM,
     INITIAL_ACTION_MODES,
@@ -62,6 +69,8 @@ from .const import (
     MAINTENANCE_ITEM_TYPES,
     STRATEGY_ELAPSED,
     STRATEGY_SESSION_RUNTIME,
+    USAGE_MODE_NONE,
+    USAGE_MODES,
 )
 from .migration import LegacyElapsedCandidate, discover_legacy_elapsed_candidates
 from .models import RuntimeState
@@ -134,7 +143,7 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             ):
                 self._base[CONF_MAINTENANCE_ITEM_QUANTITY] = 1
                 self._base[CONF_MAINTENANCE_ITEM_SPECIFICATION] = ""
-                return await self._async_strategy_step()
+                return await self.async_step_capabilities()
             if (
                 self._base[CONF_MAINTENANCE_ITEM_TYPE]
                 == ITEM_TYPE_REPLACEABLE_BATTERY
@@ -174,7 +183,7 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._base[CONF_MAINTENANCE_ITEM_SPECIFICATION] = str(
                 user_input[CONF_MAINTENANCE_ITEM_SPECIFICATION]
             ).strip()
-            return await self._async_strategy_step()
+            return await self.async_step_capabilities()
 
         schema = vol.Schema(
             {
@@ -199,7 +208,7 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._base[CONF_MAINTENANCE_ITEM_SPECIFICATION] = str(
                 user_input.get(CONF_MAINTENANCE_ITEM_SPECIFICATION, "") or ""
             ).strip()
-            return await self._async_strategy_step()
+            return await self.async_step_capabilities()
 
         schema = vol.Schema(
             {
@@ -211,6 +220,51 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }
         )
         return self.async_show_form(step_id="item_details", data_schema=schema)
+
+    async def async_step_capabilities(
+        self,
+        user_input: dict[str, Any] | None = None,
+    ) -> ConfigFlowResult:
+        """Configure optional battery and usage-count capabilities."""
+        if user_input is not None:
+            battery_mode = str(user_input[CONF_BATTERY_MODE])
+            self._base[CONF_BATTERY_MODE] = battery_mode
+            self._base[CONF_BATTERY_ENTITY] = (
+                user_input.get(CONF_BATTERY_ENTITY)
+                if battery_mode == BATTERY_MODE_ENTITY
+                else None
+            )
+            self._base[CONF_USAGE_MODE] = str(user_input[CONF_USAGE_MODE])
+            return await self._async_strategy_step()
+
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    CONF_BATTERY_MODE,
+                    default=DEFAULT_BATTERY_MODE,
+                ): SelectSelector(
+                    SelectSelectorConfig(
+                        options=BATTERY_MODES,
+                        mode=SelectSelectorMode.DROPDOWN,
+                        translation_key="battery_mode",
+                    )
+                ),
+                vol.Optional(CONF_BATTERY_ENTITY): EntitySelector(
+                    EntitySelectorConfig(domain="sensor")
+                ),
+                vol.Required(
+                    CONF_USAGE_MODE,
+                    default=DEFAULT_USAGE_MODE,
+                ): SelectSelector(
+                    SelectSelectorConfig(
+                        options=USAGE_MODES,
+                        mode=SelectSelectorMode.DROPDOWN,
+                        translation_key="usage_mode",
+                    )
+                ),
+            }
+        )
+        return self.async_show_form(step_id="capabilities", data_schema=schema)
 
     async def _async_strategy_step(self) -> ConfigFlowResult:
         """Continue to the fields required by the selected tracking strategy."""
@@ -283,6 +337,12 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }
             options = {
                 CONF_BATTERY_ENTITY: candidate.battery_entity,
+                CONF_BATTERY_MODE: (
+                    BATTERY_MODE_ENTITY
+                    if candidate.battery_entity
+                    else BATTERY_MODE_NONE
+                ),
+                CONF_USAGE_MODE: USAGE_MODE_NONE,
                 CONF_LINKED_ENTITY: candidate.linked_entity,
                 CONF_UI_GROUP: "",
                 CONF_ACTION_LABEL: candidate.action_label,
@@ -336,7 +396,6 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }
             options = {
                 **_item_options(self._base),
-                CONF_BATTERY_ENTITY: user_input.get(CONF_BATTERY_ENTITY),
                 CONF_ACTION_LABEL: user_input[CONF_ACTION_LABEL],
                 CONF_FALLBACK_INTERVAL_SECONDS: float(
                     user_input["fallback_minutes"]
@@ -357,9 +416,6 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         schema = vol.Schema(
             {
                 vol.Required(CONF_SOURCE_ENTITY): EntitySelector(
-                    EntitySelectorConfig(domain="sensor")
-                ),
-                vol.Optional(CONF_BATTERY_ENTITY): EntitySelector(
                     EntitySelectorConfig(domain="sensor")
                 ),
                 vol.Required(
@@ -417,7 +473,6 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }
             self._pending_entry_options = {
                 **_item_options(self._base),
-                CONF_BATTERY_ENTITY: user_input.get(CONF_BATTERY_ENTITY),
                 CONF_ACTION_LABEL: user_input[CONF_ACTION_LABEL],
                 CONF_FALLBACK_INTERVAL_SECONDS: float(
                     user_input["fallback_days"]
@@ -430,9 +485,6 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         schema = vol.Schema(
             {
-                vol.Optional(CONF_BATTERY_ENTITY): EntitySelector(
-                    EntitySelectorConfig(domain="sensor")
-                ),
                 vol.Required(
                     CONF_ACTION_LABEL,
                     default=_action_default(self._base),
@@ -563,6 +615,17 @@ class DeviceMaintenanceOptionsFlow(OptionsFlowWithReload):
                 _infer_item_type_from_action(current.get(CONF_ACTION_LABEL)),
             )
         )
+        current_battery_mode = str(
+            current.get(
+                CONF_BATTERY_MODE,
+                BATTERY_MODE_ENTITY
+                if current.get(CONF_BATTERY_ENTITY)
+                else BATTERY_MODE_NONE,
+            )
+        )
+        current_usage_mode = str(
+            current.get(CONF_USAGE_MODE, USAGE_MODE_NONE)
+        )
         default_picture_key = str(
             current.get(CONF_PICTURE_KEY)
             or slugify(
@@ -605,7 +668,13 @@ class DeviceMaintenanceOptionsFlow(OptionsFlowWithReload):
                 CONF_PICTURE_KEY: _clean_optional_text(
                     user_input.get(CONF_PICTURE_KEY, default_picture_key)
                 ),
-                CONF_BATTERY_ENTITY: user_input.get(CONF_BATTERY_ENTITY),
+                CONF_BATTERY_MODE: str(user_input[CONF_BATTERY_MODE]),
+                CONF_BATTERY_ENTITY: (
+                    user_input.get(CONF_BATTERY_ENTITY)
+                    if str(user_input[CONF_BATTERY_MODE]) == BATTERY_MODE_ENTITY
+                    else None
+                ),
+                CONF_USAGE_MODE: str(user_input[CONF_USAGE_MODE]),
                 CONF_ACTION_LABEL: user_input[CONF_ACTION_LABEL],
                 CONF_HISTORY_SIZE: int(user_input[CONF_HISTORY_SIZE]),
             }
@@ -665,12 +734,32 @@ class DeviceMaintenanceOptionsFlow(OptionsFlowWithReload):
                 CONF_PICTURE_KEY,
                 description={"suggested_value": default_picture_key},
             ): TextSelector(),
+            vol.Required(
+                CONF_BATTERY_MODE,
+                default=current_battery_mode,
+            ): SelectSelector(
+                SelectSelectorConfig(
+                    options=BATTERY_MODES,
+                    mode=SelectSelectorMode.DROPDOWN,
+                    translation_key="battery_mode",
+                )
+            ),
             vol.Optional(
                 CONF_BATTERY_ENTITY,
                 description={
                     "suggested_value": current.get(CONF_BATTERY_ENTITY)
                 },
             ): EntitySelector(EntitySelectorConfig(domain="sensor")),
+            vol.Required(
+                CONF_USAGE_MODE,
+                default=current_usage_mode,
+            ): SelectSelector(
+                SelectSelectorConfig(
+                    options=USAGE_MODES,
+                    mode=SelectSelectorMode.DROPDOWN,
+                    translation_key="usage_mode",
+                )
+            ),
             vol.Required(
                 CONF_ACTION_LABEL,
                 default=current.get(
@@ -794,6 +883,17 @@ def _item_options(base: dict[str, Any]) -> dict[str, Any]:
         ).strip(),
         CONF_LINKED_ENTITY: base.get(CONF_LINKED_ENTITY),
         CONF_UI_GROUP: _clean_optional_text(base.get(CONF_UI_GROUP)),
+        CONF_BATTERY_MODE: str(
+            base.get(CONF_BATTERY_MODE, DEFAULT_BATTERY_MODE)
+        ),
+        CONF_BATTERY_ENTITY: (
+            base.get(CONF_BATTERY_ENTITY)
+            if base.get(CONF_BATTERY_MODE) == BATTERY_MODE_ENTITY
+            else None
+        ),
+        CONF_USAGE_MODE: str(
+            base.get(CONF_USAGE_MODE, DEFAULT_USAGE_MODE)
+        ),
     }
 
 
