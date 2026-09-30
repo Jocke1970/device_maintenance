@@ -2,6 +2,78 @@
 
 Each tracked maintenance item is represented by one Home Assistant config entry. The config flow asks for a tracker name, a tracking strategy, and what is actually charged, replaced, or serviced.
 
+## Quick configuration guide
+
+Create or edit a tracker from **Settings → Devices & services → Helpers / Device Maintenance**. Existing trackers can be changed through **Configure** without clearing learned interval history.
+
+The exact labels are localized by Home Assistant, but the configuration order is:
+
+1. choose the tracker name and tracking strategy;
+2. choose what is maintained or replaced;
+3. optionally link the tracker to a physical Home Assistant entity and/or UI group;
+4. choose optional battery and usage-count capabilities;
+5. configure the selected strategy;
+6. for a new `elapsed` tracker, choose when the current maintenance cycle started.
+
+### Choosing the battery source
+
+Battery information is optional and independent from usage counting.
+
+Choose:
+
+- **No battery information** when the device does not expose a useful percentage;
+- **Home Assistant sensor** when a real percentage sensor exists in Home Assistant;
+- **Manual battery level** when the device shows a percentage locally but does not expose it to Home Assistant.
+
+When **Manual battery level** is selected, Device Maintenance creates an editable number entity. With Device Maintenance Card `0.2.0-dev.10` or later, the same percentage can also be edited directly in the card.
+
+Changing manual battery percentage only updates the observed battery state. It does **not** register a charge, battery replacement, or other maintenance action.
+
+### Choosing usage counting
+
+Choose **Manual +1 counting** when the number of uses is meaningful for the maintenance cycle.
+
+When enabled, Device Maintenance creates:
+
+- a **+1 usage** button;
+- an editable number for the current usage count;
+- learned usage-per-cycle metadata after completed maintenance cycles.
+
+With Device Maintenance Card `0.2.0-dev.10` or later, both the editable count and the **+1** control are available directly in the card.
+
+Use the editable count to correct missed or accidental increments. Pressing the normal maintenance action (for example **Charged**) closes the current usage cycle, stores a non-zero usage sample, and resets the current count to zero.
+
+### Example: device with usage count but no battery percentage
+
+For a device such as a Remington HC4300 where battery percentage is not visible but each use is easy to count:
+
+```text
+Battery source: No battery information
+Usage counting: Manual +1 counting
+```
+
+The tracker can still learn approximately how many uses normally occur between charges, even though no battery percentage exists.
+
+### Example: device with visible battery percentage and usage count
+
+For a device that shows battery percentage on its own display and where uses can also be counted:
+
+```text
+Battery source: Manual battery level
+Usage counting: Manual +1 counting
+```
+
+This exposes both manual percentage and usage controls. The two data sources remain independent: changing percentage does not increment usage and neither action automatically registers the maintenance cycle.
+
+### Existing trackers
+
+Older trackers remain compatible:
+
+- an existing configured `battery_entity` is interpreted as Home Assistant sensor mode;
+- optional capabilities can be enabled later through **Configure**;
+- changing battery source or usage-count mode does not clear the existing time/runtime learning history;
+- disabling usage counting does not delete its persisted usage history.
+
 ## Common concepts
 
 ### Maintenance / replacement item
@@ -346,7 +418,11 @@ Current grouped-card behavior includes:
 - separate urgency/progress, prognosis, metadata, and action button per row;
 - a group status derived from the most urgent child tracker;
 - localized display text for generic replacement-item metadata;
-- responsive desktop/mobile layout.
+- responsive desktop/mobile layout;
+- direct editing of manual battery percentage;
+- direct editing of current usage count;
+- a native **+1 usage** control;
+- learned usage-per-cycle status and remaining-use estimate when enough history exists.
 
 Grouped presentation has been verified with OneBlade (charge + blade) and Air Wick (refill + battery).
 
