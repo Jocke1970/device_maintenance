@@ -10,6 +10,7 @@ from homeassistant.helpers.typing import ConfigType
 from .const import CONF_MIGRATION_SEED, DATA_STORE, DOMAIN, PLATFORMS
 from .manager import DeviceMaintenanceManager
 from .models import RuntimeState
+from .picture import async_setup_picture_websocket
 from .store import DeviceMaintenanceStore
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -20,6 +21,7 @@ async def async_setup(hass: HomeAssistant, _config: ConfigType) -> bool:
     store = DeviceMaintenanceStore(hass)
     await store.async_load()
     hass.data.setdefault(DOMAIN, {})[DATA_STORE] = store
+    async_setup_picture_websocket(hass)
     return True
 
 

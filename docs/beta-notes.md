@@ -1,5 +1,26 @@
 # Beta notes
 
+## 0.1.0-beta.4
+
+This beta restores product-picture management as a native Device Maintenance feature instead of relying on another integration.
+
+### Added
+
+- admin-only `device_maintenance/picture/upload` websocket command;
+- admin-only `device_maintenance/picture/remove` websocket command;
+- backend-owned storage in `/config/www/device_maintenance_card/pictures/`;
+- JPEG, PNG, and WebP validation with a 5 MB size limit;
+- atomic replacement with stale-extension cleanup;
+- tracker lookup by `entry_id`, with the backend resolving the configured `picture_key`;
+- Device Maintenance Card `0.2.0-dev.11` restores **Bild** upload/replace and remove controls directly below the product picture.
+
+### Behavior
+
+Picture changes are presentation-only. Uploading, replacing, or removing a picture does not modify maintenance runtime, learned history, manual battery percentage, usage count, or usage history.
+
+The picture API is now owned by Device Maintenance and no longer depends on Garmin Connect's former generic card-picture websocket implementation.
+
+
 ## 0.1.0-beta.3
 
 This beta adds two independent optional capabilities for devices that are not fully connected to Home Assistant.

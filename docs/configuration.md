@@ -152,6 +152,19 @@ Picture file: braun_oral_b.jpeg
 
 The picture key is the filename stem only; do not include `.jpeg`, `.png`, or another extension.
 
+With Device Maintenance Card `0.2.0-dev.11` or later, Home Assistant administrators can upload or replace the picture directly from the card using the **Bild** control below the product image. A neighboring remove button deletes the uploaded file.
+
+The upload is handled by Device Maintenance itself:
+
+- supported formats: JPEG, PNG, WebP;
+- maximum size: 5 MB;
+- the frontend sends the tracker `entry_id`;
+- the backend resolves `picture_key` and stores the file in `/config/www/device_maintenance_card/pictures/`;
+- replacing a picture removes stale variants with other supported extensions;
+- changing or removing a picture does not alter runtime state, learning history, battery state, or usage history.
+
+For grouped cards, the **Bild** control belongs to the tracker selected as the group's picture source. The grouping remains presentation-only.
+
 ### Action label
 
 The action label describes what happened when the maintenance cycle is completed, for example:
@@ -422,7 +435,8 @@ Current grouped-card behavior includes:
 - direct editing of manual battery percentage;
 - direct editing of current usage count;
 - a native **+1 usage** control;
-- learned usage-per-cycle status and remaining-use estimate when enough history exists.
+- learned usage-per-cycle status and remaining-use estimate when enough history exists;
+- admin-only upload/replace/remove controls for tracker pictures.
 
 Grouped presentation has been verified with OneBlade (charge + blade) and Air Wick (refill + battery).
 
