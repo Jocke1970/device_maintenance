@@ -1,6 +1,6 @@
 # Device Maintenance beta
 
-The next beta release candidate is `0.1.0-beta.6`.
+The current beta release is `0.1.0-beta.6`.
 
 This release finalizes the HACS beta path introduced in beta.5.
 
