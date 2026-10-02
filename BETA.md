@@ -1,17 +1,19 @@
 # Device Maintenance beta
 
-The current beta release is `0.1.0-beta.5`.
+The next beta release candidate is `0.1.0-beta.6`.
 
-This release keeps the native Device Maintenance picture backend from beta.4 and adds the release plumbing needed for HACS-managed beta updates.
+This release finalizes the HACS beta path introduced in beta.5.
 
 ## HACS beta delivery
 
-After `dev → beta` promotion, the `beta` branch runs a dedicated release workflow. The workflow repeats Python syntax, Hassfest, and HACS validation before publishing a GitHub prerelease whose tag matches the integration manifest version.
+Device Maintenance beta versions are published as GitHub prereleases only after `dev → beta` promotion and release validation.
 
-HACS uses published GitHub releases as version sources. Users who enable prerelease updates for Device Maintenance can therefore receive beta updates through HACS instead of manually copying the `beta` branch.
+The repository deliberately keeps `main` for stable releases only. Because there is no stable release yet, `hacs.json` now sets `hide_default_branch: true` so HACS offers published releases rather than the intentionally empty stable-only default branch.
 
-Device Maintenance is still a pre-release integration. Test it alongside the existing legacy/YAML implementation and keep old trackers available until the new tracker has demonstrated state and behavior parity for that device.
+Users can add Device Maintenance as a custom HACS integration repository and enable prerelease updates for the repository to receive beta updates.
 
-For `0.1.0-beta.5`, continue validating picture upload/replacement/removal with Device Maintenance Card `0.2.0-dev.11`, including persistence across Home Assistant restart and browser reload.
+Device Maintenance remains pre-release software. Continue testing alongside the existing legacy/YAML implementation until tracker parity is verified.
+
+For `0.1.0-beta.6`, continue validating picture upload/replacement/removal with Device Maintenance Card `0.2.0-dev.11`.
 
 See [Beta notes](docs/beta-notes.md), [Installation](docs/installation.md), and [Migration plan](docs/migration.md).
