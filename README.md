@@ -4,7 +4,7 @@
 
 A Home Assistant custom integration for self-learning device maintenance, runtime tracking, battery cycles, and service intervals.
 
-> **Status:** `0.1.0-beta.3` is the current pre-release on the `beta` branch, intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.12`.
+> **Status:** `0.1.0-beta.3` is the current pre-release on the `beta` branch, intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation. Active development continues on `dev` as `0.1.0-dev.13`.
 
 Device Maintenance is being rebuilt from a collection of YAML helpers, template sensors, scripts, and automations into a proper Home Assistant helper integration with persistent runtime state and a strategy-based backend.
 
@@ -28,8 +28,8 @@ Current goals:
 ## Current versions
 
 - beta: `0.1.0-beta.3`
-- dev backend: `0.1.0-dev.12`
-- current development Lovelace card: `0.2.0-dev.10`
+- dev backend: `0.1.0-dev.13`
+- current development Lovelace card: `0.2.0-dev.11`
 
 The current backend provides:
 
@@ -40,6 +40,7 @@ The current backend provides:
 - stable `entry_id` metadata on both sensor and action button for dynamic frontend pairing;
 - optional `ui_group` metadata for combining multiple trackers into one frontend device card;
 - editable `picture_key` metadata so a tracker can reuse an existing Lovelace picture even when its display name differs from the image filename;
+- native admin-only picture upload/remove websocket API that stores validated JPEG/PNG/WebP files under the Device Maintenance card picture directory;
 - structured metadata for built-in batteries, replaceable batteries, filters, cartridges/refills, blades, CO₂ cylinders, and other maintenance items;
 - safer legacy metadata inference that avoids product-name false positives such as `OneBlade` being treated as a blade-replacement action;
 - optional explicit linking to a physical Home Assistant device through an entity;
@@ -53,7 +54,7 @@ The current backend provides:
 - local Home Assistant brand icons;
 - Python syntax compilation, Hassfest, and HACS validation in CI.
 
-The current development card dynamically discovers Device Maintenance sensors, pairs their action buttons through `entry_id`, renders pictures and maintenance metadata, sorts by urgency, and can combine several independent trackers into one product card through `ui_group`. Grouped presentation has been verified with Philips OneBlade (charge + blade replacement) and Air Wick (refill + battery replacement).
+The current development card dynamically discovers Device Maintenance sensors, pairs their action buttons through `entry_id`, renders pictures and maintenance metadata, sorts by urgency, can upload/replace/remove tracker pictures directly for Home Assistant administrators, and can combine several independent trackers into one product card through `ui_group`. Grouped presentation has been verified with Philips OneBlade (charge + blade replacement) and Air Wick (refill + battery replacement).
 
 The first real `session_runtime` tracker, Braun Oral-B, has passed side-by-side parity checks for normal runtime accumulation, session reset, restart behavior, maintenance baseline persistence, short-cycle filtering, battery metadata, and source-device linking. A full real charge cycle is still required before retiring the legacy Oral-B tracker.
 
