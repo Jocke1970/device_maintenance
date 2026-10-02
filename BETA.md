@@ -1,6 +1,6 @@
 # Device Maintenance beta
 
-The next beta release candidate is `0.1.0-beta.5`.
+The current beta release is `0.1.0-beta.5`.
 
 This release keeps the native Device Maintenance picture backend from beta.4 and adds the release plumbing needed for HACS-managed beta updates.
 
