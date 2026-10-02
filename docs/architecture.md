@@ -20,6 +20,7 @@ custom_components/device_maintenance/
 ├── manager.py
 ├── config_flow.py
 ├── migration.py
+├── picture.py
 ├── sensor.py
 ├── button.py
 ├── number.py
@@ -232,16 +233,40 @@ The sensor exposes stable `entry_id` and `backend=device_maintenance` metadata s
 
 The button is deliberately the mutation boundary for normal maintenance actions. The frontend calls backend actions rather than altering baselines or history itself.
 
+## Picture storage and websocket boundary
+
+Device Maintenance owns its own card-picture API in `picture.py`. The frontend sends only the tracker `entry_id`; the backend resolves that config entry and its configured `picture_key` before touching the filesystem.
+
+Registered admin-only websocket commands are:
+
+```text
+device_maintenance/picture/upload
+device_maintenance/picture/remove
+```
+
+Uploads accept JPEG, PNG, and WebP up to 5 MB. The backend validates both MIME type and the minimal binary file signature, writes atomically, and removes stale extension variants for the same picture key.
+
+Files are stored under:
+
+```text
+/config/www/device_maintenance_card/pictures/
+```
+
+and are served to the card through `/local/device_maintenance_card/pictures/`.
+
+This deliberately keeps picture ownership inside Device Maintenance rather than depending on Garmin Connect or another integration.
+
 ## Frontend boundary
 
 The dynamic Device Maintenance Lovelace card is now a thin client of the integration-native sensor/button contract rather than the owner of maintenance logic.
 
-Current development-card behavior (`0.2.0-dev.10`) includes:
+Current development-card behavior (`0.2.0-dev.11`) includes:
 
 - dynamic discovery of Device Maintenance sensors;
 - action-button pairing by `entry_id`;
 - urgency sorting and show-all filtering;
 - optional product pictures with fallback icons;
+- admin-only picture upload, replacement, and removal through the Device Maintenance websocket API;
 - maintenance category, age/runtime, remaining estimate, confidence, item metadata, and battery context;
 - explicit grouping through shared `ui_group` values;
 - a common product title for grouped trackers while preserving separate child rows/actions;
