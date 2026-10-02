@@ -1,5 +1,24 @@
 # Beta notes
 
+## 0.1.0-beta.6
+
+This beta completes the HACS prerelease path while preserving the strict `dev → beta → main` model.
+
+### Added
+
+- `hide_default_branch: true` in `hacs.json`;
+- explicit HACS custom-repository installation instructions;
+- documentation explaining why `main` remains stable-only until the first stable release.
+
+### Behavior
+
+HACS uses published GitHub releases for Device Maintenance beta delivery. The intentionally empty stable-only `main` branch is no longer offered as a downloadable version in HACS.
+
+Users who enable prerelease updates for the Device Maintenance repository can receive beta updates through HACS.
+
+Beta.6 otherwise retains the backend and Device Maintenance Card `0.2.0-dev.11` test scope from beta.5.
+
+
 ## 0.1.0-beta.5
 
 This beta adds a release path for HACS-managed prerelease updates while preserving the strict `dev → beta → main` branch model.
