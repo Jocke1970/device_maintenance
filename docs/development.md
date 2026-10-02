@@ -84,6 +84,8 @@ Stable releases use normal semantic versions:
 
 The manifest version and documented version must agree before promotion.
 
+Published beta versions also have a GitHub prerelease with a matching tag. The `beta` branch publishing workflow reruns release-facing validation before creating that prerelease. This makes HACS beta delivery a consequence of a successful `dev → beta` promotion rather than a separate development path.
+
 The first beta promotion is `0.1.0-beta.1`. It was gated on a real Braun Oral-B parity test covering session accumulation, reset handling, restart persistence, maintenance baseline persistence, and short-cycle learning rejection.
 
 ## Validation

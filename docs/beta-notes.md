@@ -1,5 +1,24 @@
 # Beta notes
 
+## 0.1.0-beta.5
+
+This beta adds a release path for HACS-managed prerelease updates while preserving the strict `dev → beta → main` branch model.
+
+### Added
+
+- dedicated `Publish beta` GitHub Actions workflow triggered only by pushes to `beta`;
+- release gating with Python syntax compilation, Hassfest, and HACS validation;
+- automatic GitHub prerelease creation using the exact manifest version as the release tag;
+- idempotent release publishing so an existing version is not recreated;
+- HACS installation/update documentation for prerelease users.
+
+### Behavior
+
+Feature work still starts on `dev`. A beta is prepared and validated on `dev`, promoted to `beta`, and only then published as a GitHub prerelease. HACS can consider that prerelease when prerelease updates are enabled for the repository.
+
+Beta.5 otherwise retains the native picture backend and Device Maintenance Card `0.2.0-dev.11` test scope from beta.4.
+
+
 ## 0.1.0-beta.4
 
 This beta restores product-picture management as a native Device Maintenance feature instead of relying on another integration.
