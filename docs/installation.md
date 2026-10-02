@@ -70,7 +70,16 @@ dev → beta → main
 
 The `beta` branch has a dedicated publishing workflow. It repeats Python syntax, Hassfest, and HACS validation and only then publishes a GitHub prerelease using the manifest version as the release tag.
 
-HACS uses published GitHub releases as version sources. To receive Device Maintenance beta updates through HACS, enable prerelease updates for the Device Maintenance repository in HACS. Stable users can leave prerelease updates disabled.
+To install the beta through HACS:
+
+1. open HACS;
+2. open the three-dot menu and choose **Custom repositories**;
+3. add `https://github.com/Jocke1970/device_maintenance`;
+4. select repository type **Integration**;
+5. install Device Maintenance from HACS;
+6. enable prerelease updates for the Device Maintenance repository if you want HACS to track beta releases.
+
+The repository keeps `main` for stable releases only. Until the first stable release exists, `hacs.json` hides the default branch from HACS version choices so users select published releases instead of the intentionally empty stable branch.
 
 The manual `beta` branch installation above remains useful for recovery or deliberate branch-level testing.
 
