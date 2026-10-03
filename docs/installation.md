@@ -39,7 +39,7 @@ For normal use, leave prerelease updates disabled. HACS will then track stable G
 
 ## Beta / prerelease updates in HACS
 
-Users who deliberately want to test prereleases can enable prerelease updates for the Device Maintenance repository in HACS.
+Users who deliberately want to test prereleases can enable the HACS prerelease switch for the Device Maintenance repository. HACS creates a repository switch entity for prerelease tracking; the entity is disabled by default in Home Assistant. Enable that entity if necessary, then turn the switch on so prereleases are included in update checks.
 
 Future prereleases use calendar-based versions such as:
 
