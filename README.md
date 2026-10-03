@@ -65,8 +65,8 @@ The first real legacy `elapsed` migration, Garmin Fenix 7 Pro Sapphire, has also
 
 | Strategy | Use case | Current status |
 | --- | --- | --- |
-| `session_runtime` | Source entity reports the duration of the current usage session | Beta |
-| `elapsed` | Track wall-clock time since the previous maintenance action | Beta; legacy import available |
+| `session_runtime` | Source entity reports the duration of the current usage session | Stable |
+| `elapsed` | Track wall-clock time since the previous maintenance action | Stable; legacy import available |
 | `cumulative_runtime` | Source exposes a monotonically increasing usage counter | Planned |
 | adapters | Specialized sources such as Garmin Gear or Garmin Index Sleep | Planned |
 
@@ -130,7 +130,7 @@ The default history size is five samples and can be changed per tracker.
 
 The current stable release is `2026.10.0`.
 
-For beta testing, HACS can track published GitHub prereleases when prerelease updates are enabled for the repository. Manual `beta` branch installation remains available as a recovery/testing path. See [Installation](docs/installation.md).
+Install the stable release through HACS. Users who deliberately test prereleases can enable prerelease updates for the repository. Manual branch/tag installation remains available as a recovery or development path. See [Installation](docs/installation.md).
 
 After installation, add a tracker from:
 
@@ -163,7 +163,7 @@ Feature work does not go directly to `beta` or `main`.
 
 ## Documentation
 
-- [Beta notes](docs/beta-notes.md)
+- [Release notes and beta history](docs/beta-notes.md)
 - [Installation](docs/installation.md)
 - [Configuration](docs/configuration.md)
 - [Architecture](docs/architecture.md)
@@ -179,7 +179,7 @@ The current direction is:
 3. add adapters for Garmin Gear and Garmin Index Sleep;
 4. validate the remaining special trackers and complete real-cycle parity tests;
 5. decide the release packaging/path for the Lovelace card;
-6. retire legacy import/YAML support before the stable release once migration is complete.
+6. retire legacy import/YAML compatibility only after the remaining migration scope is complete and a later release no longer needs it.
 
 ## License
 
