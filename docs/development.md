@@ -61,32 +61,42 @@ If a stable defect requires a hotfix, the resulting fix still needs to be reconc
 
 ## Versioning
 
-Development versions use a suffix such as:
+Device Maintenance uses calendar-based versions.
+
+Stable releases use:
 
 ```text
-0.1.0-dev.1
-0.1.0-dev.2
+YYYY.MM.PATCH
 ```
 
-Beta builds use a pre-release identifier, for example:
+Examples:
 
 ```text
-0.1.0-beta.1
+2026.10.0
+2026.10.1
+2026.11.0
 ```
 
-Stable releases use normal semantic versions:
+Beta prereleases use the same calendar base with a compact beta suffix:
 
 ```text
-0.1.0
-0.2.0
-1.0.0
+2026.10.0b1
+2026.10.0b2
+```
+
+Development builds use a development suffix:
+
+```text
+2026.10.1-dev.1
 ```
 
 The manifest version and documented version must agree before promotion.
 
-Published beta versions also have a GitHub prerelease with a matching tag. The `beta` branch publishing workflow reruns release-facing validation before creating that prerelease. This makes HACS beta delivery a consequence of a successful `dev → beta` promotion rather than a separate development path.
+Published beta versions have GitHub prereleases with matching tags. The `beta` publishing workflow publishes only prerelease versions and intentionally skips stable calendar versions that are passing through `beta` on their way to `main`.
 
-The first beta promotion is `0.1.0-beta.1`. It was gated on a real Braun Oral-B parity test covering session accumulation, reset handling, restart persistence, maintenance baseline persistence, and short-cycle learning rejection.
+Stable versions are published only from `main` by the dedicated stable release workflow, after Python syntax, Hassfest, and HACS validation all pass.
+
+Historical `0.1.0-beta.x` builds remain valid historical prereleases but are no longer the versioning scheme for new releases.
 
 ## Validation
 
