@@ -1,5 +1,20 @@
 # Beta notes
 
+## Stable candidate 2026.10.0
+
+The tested backend from `0.1.0-beta.6` is being promoted as the first calendar-versioned stable release, `2026.10.0`.
+
+### Release mechanics
+
+- versioning switches to calendar format `YYYY.MM.PATCH`;
+- future beta versions use forms such as `2026.10.0b1`;
+- stable versions pass through `beta` for validation but are published only from `main`;
+- a dedicated stable workflow repeats Python syntax, Hassfest, and HACS validation before creating the GitHub release;
+- the Lovelace card remains a separately distributed frontend at `0.2.0-dev.11`.
+
+No backend feature behavior is intentionally changed by the versioning/release transition.
+
+
 ## 0.1.0-beta.6
 
 This beta completes the HACS prerelease path while preserving the strict `dev → beta → main` model.

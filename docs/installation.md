@@ -1,6 +1,6 @@
 # Installation
 
-Device Maintenance is currently in beta. Published beta versions are intended for controlled real Home Assistant testing alongside the existing legacy/YAML implementation.
+Device Maintenance supports HACS installation from published GitHub releases. The first stable release is `2026.10.0`; prerelease users can continue to opt into beta releases.
 
 ## Beta install
 
@@ -62,13 +62,13 @@ The `dev` branch may contain incomplete work and should only be used when delibe
 
 The repository contains `hacs.json` and is validated in CI.
 
-Beta versions are published as GitHub prereleases after the normal promotion path:
+Releases follow the normal promotion path:
 
 ```text
 dev → beta → main
 ```
 
-The `beta` branch has a dedicated publishing workflow. It repeats Python syntax, Hassfest, and HACS validation and only then publishes a GitHub prerelease using the manifest version as the release tag.
+The `beta` branch publishes only beta prereleases. Stable calendar versions pass through `beta` without creating a prerelease and are published only after promotion to `main`.
 
 To install the beta through HACS:
 
