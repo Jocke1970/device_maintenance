@@ -95,7 +95,7 @@ Known examples include:
 
 The current development/test installation has migrated the ordinary `elapsed` set to integration-native trackers. Garmin Fenix 7 Pro Sapphire was the first state-preserving proof and retained last-action time, history, fallback interval, calculated age, and state across restart.
 
-The state-safe importer is included in stable `2026.10.0` as a migration aid. Its presence does not mean every legacy tracker type is ready for retirement; each tracker still follows the parity and removal gates below.
+The state-safe importer has been available since stable `2026.10.0` and remains part of the current stable line. Its presence does not mean every legacy tracker type is ready for retirement; each tracker still follows the parity and removal gates below.
 
 ### Grouped-product validation
 
