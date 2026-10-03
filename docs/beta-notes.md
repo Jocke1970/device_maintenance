@@ -1,5 +1,10 @@
 # Release notes and beta history
 
+## 2026.10.1 — stable documentation cleanup
+
+Stable promotion of the documentation-only `2026.10.1b1` prerelease. No backend behavior is intentionally changed.
+
+
 ## 2026.10.1b1 — documentation cleanup
 
 This prerelease aligns the public documentation with the actual stable/HACS setup after `2026.10.0`. It does not intentionally change backend behavior.
