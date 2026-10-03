@@ -1,19 +1,15 @@
-# Device Maintenance beta
+# Device Maintenance release status
 
-The current beta release is `0.1.0-beta.6`.
+The current published beta is `0.1.0-beta.6`.
 
-This release finalizes the HACS beta path introduced in beta.5.
+The first calendar-versioned stable release candidate is `2026.10.0` and is being promoted through the normal branch flow:
 
-## HACS beta delivery
+```text
+dev → beta → main
+```
 
-Device Maintenance beta versions are published as GitHub prereleases only after `dev → beta` promotion and release validation.
+Beta releases remain GitHub prereleases. Stable calendar versions are not published from `beta`; they are validated there and published only after promotion to `main`.
 
-The repository deliberately keeps `main` for stable releases only. Because there is no stable release yet, `hacs.json` now sets `hide_default_branch: true` so HACS offers published releases rather than the intentionally empty stable-only default branch.
+The current Device Maintenance Card remains `0.2.0-dev.11` and is distributed separately from the backend integration.
 
-Users can add Device Maintenance as a custom HACS integration repository and enable prerelease updates for the repository to receive beta updates.
-
-Device Maintenance remains pre-release software. Continue testing alongside the existing legacy/YAML implementation until tracker parity is verified.
-
-For `0.1.0-beta.6`, continue validating picture upload/replacement/removal with Device Maintenance Card `0.2.0-dev.11`.
-
-See [Beta notes](docs/beta-notes.md), [Installation](docs/installation.md), and [Migration plan](docs/migration.md).
+See [Installation](docs/installation.md), [Development and release flow](docs/development.md), and [Migration plan](docs/migration.md).
