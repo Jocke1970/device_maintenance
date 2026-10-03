@@ -1,6 +1,6 @@
 # Legacy import
 
-The state-safe legacy migration path was introduced during the pre-stable `0.1.0-dev.4` development cycle and remains available in stable `2026.10.0`.
+The state-safe legacy migration path was introduced during the pre-stable `0.1.0-dev.4` development cycle, shipped in stable `2026.10.0`, and remains available in the current stable line.
 
 The first importer intentionally supports only ordinary `elapsed` trackers that expose the legacy Device Maintenance attributes used by the YAML implementation:
 
