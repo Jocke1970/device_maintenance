@@ -35,7 +35,7 @@ After restart, add the integration from:
 
 **Settings → Devices & services → Add integration → Device Maintenance**
 
-For normal use, leave prerelease updates disabled. HACS will then track stable GitHub releases such as `2026.10.0`.
+For normal use, leave prerelease updates disabled. HACS will then track stable GitHub releases such as the current `2026.10.1`.
 
 ## Beta / prerelease updates in HACS
 
@@ -44,8 +44,8 @@ Users who deliberately want to test prereleases can enable the HACS prerelease s
 Future prereleases use calendar-based versions such as:
 
 ```text
-2026.10.1b1
-2026.10.1b2
+2026.10.2b1
+2026.10.2b2
 ```
 
 Prereleases follow the same promotion path:

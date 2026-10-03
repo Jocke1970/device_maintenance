@@ -80,14 +80,14 @@ Examples:
 Beta prereleases use the same calendar base with a compact beta suffix:
 
 ```text
-2026.10.0b1
-2026.10.0b2
+2026.10.2b1
+2026.10.2b2
 ```
 
 Development builds use a development suffix:
 
 ```text
-2026.10.1-dev.1
+2026.10.2-dev.1
 ```
 
 The manifest version and documented version must agree before promotion.
@@ -108,7 +108,7 @@ Current checks include:
 - Home Assistant Hassfest;
 - HACS validation.
 
-`dev` may temporarily relax repository-publishing checks that are unrelated to Python correctness during bootstrap, but `beta` and `main` are intended to pass the full release-facing checks.
+`dev` may use development-only validation exceptions where explicitly documented, but every promotion to `beta` and `main` must pass the full release-facing checks.
 
 A green CI run is necessary but not sufficient for promotion. Device Maintenance persists user state, so real Home Assistant runtime tests are part of the release gate.
 
