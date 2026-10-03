@@ -5,7 +5,7 @@ Device Maintenance is available as a stable HACS-installable custom integration.
 Current stable backend release:
 
 ```text
-2026.10.0
+2026.10.1
 ```
 
 The repository follows:
@@ -79,7 +79,7 @@ HACS is the recommended installation method. For recovery or deliberate manual i
 cd /config
 rm -rf /tmp/device_maintenance
 
-git clone --depth 1 --branch 2026.10.0 \
+git clone --depth 1 --branch 2026.10.1 \
   https://github.com/Jocke1970/device_maintenance.git \
   /tmp/device_maintenance
 
@@ -104,7 +104,7 @@ Verify that this file exists:
 and that its version is:
 
 ```text
-2026.10.0
+2026.10.1
 ```
 
 If Device Maintenance does not appear in the integration picker after restart, check the Home Assistant log for import or manifest errors.
