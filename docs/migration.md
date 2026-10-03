@@ -50,7 +50,7 @@ Parity checks:
 7. the next cycle must start from zero effective runtime while cumulative total remains monotonic;
 8. learning labels and expected interval must match the intended history rules.
 
-### Beta verification status
+### Historical beta verification
 
 Before `0.1.0-beta.1`, the real Oral-B tracker was tested side by side with the legacy YAML implementation.
 
@@ -95,7 +95,7 @@ Known examples include:
 
 The current development/test installation has migrated the ordinary `elapsed` set to integration-native trackers. Garmin Fenix 7 Pro Sapphire was the first state-preserving proof and retained last-action time, history, fallback interval, calculated age, and state across restart.
 
-The state-safe importer remains available during beta because migration is not yet considered a stable-release contract.
+The state-safe importer is included in stable `2026.10.0` as a migration aid. Its presence does not mean every legacy tracker type is ready for retirement; each tracker still follows the parity and removal gates below.
 
 ### Grouped-product validation
 

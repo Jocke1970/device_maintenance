@@ -1,13 +1,32 @@
-# Beta notes
+# Release notes and beta history
 
-## Stable candidate 2026.10.0
+## 2026.10.1 — stable documentation cleanup
 
-The tested backend from `0.1.0-beta.6` is being promoted as the first calendar-versioned stable release, `2026.10.0`.
+Stable promotion of the documentation-only `2026.10.1b1` prerelease. No backend behavior is intentionally changed.
+
+
+## 2026.10.1b1 — documentation cleanup
+
+This prerelease aligns the public documentation with the actual stable/HACS setup after `2026.10.0`. It does not intentionally change backend behavior.
+
+### Documentation fixes
+
+- stable HACS installation is now the primary installation path;
+- `main` is documented as the stable/default branch;
+- HACS release delivery and prerelease-switch behavior are described accurately;
+- `session_runtime` and `elapsed` are marked stable;
+- pre-stable wording in configuration, migration, and legacy-import docs is made historical;
+- the separately distributed Device Maintenance Card `0.2.0-dev.11` is explicitly documented.
+
+
+## 2026.10.0 — stable
+
+The tested backend from `0.1.0-beta.6` was promoted as the first calendar-versioned stable release, `2026.10.0`.
 
 ### Release mechanics
 
 - versioning switches to calendar format `YYYY.MM.PATCH`;
-- future beta versions use forms such as `2026.10.0b1`;
+- future beta versions use forms such as `2026.10.1b1`;
 - stable versions pass through `beta` for validation but are published only from `main`;
 - a dedicated stable workflow repeats Python syntax, Hassfest, and HACS validation before creating the GitHub release;
 - the Lovelace card remains a separately distributed frontend at `0.2.0-dev.11`.
@@ -23,11 +42,11 @@ This beta completes the HACS prerelease path while preserving the strict `dev �
 
 - `hide_default_branch: true` in `hacs.json`;
 - explicit HACS custom-repository installation instructions;
-- documentation explaining why `main` remains stable-only until the first stable release.
+- documentation for the transition to a stable-only `main` branch and release-based HACS delivery.
 
 ### Behavior
 
-HACS uses published GitHub releases for Device Maintenance beta delivery. The intentionally empty stable-only `main` branch is no longer offered as a downloadable version in HACS.
+At the time of beta.6, HACS used published GitHub prereleases while the still-empty stable-only `main` branch was hidden from downloadable versions. This was the final bootstrap step before stable `2026.10.0` populated `main`.
 
 Users who enable prerelease updates for the Device Maintenance repository can receive beta updates through HACS.
 

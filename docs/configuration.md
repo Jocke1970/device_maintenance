@@ -213,11 +213,11 @@ Manual battery percentage is stored in Device Maintenance runtime state, not in 
 
 The battery entity is used only in Home Assistant sensor mode. It must not point to the tracker itself or to another Device Maintenance maintenance sensor.
 
-Battery percentage is context only in this beta. It does not automatically infer that a charge or battery replacement occurred.
+Battery percentage is contextual data only. It does not automatically infer that a charge or battery replacement occurred.
 
 ### Usage counting
 
-Usage counting is another independent optional capability. The current beta provides manual counting.
+Usage counting is another independent optional capability. The current stable implementation provides manual counting.
 
 When enabled, the tracker creates:
 
