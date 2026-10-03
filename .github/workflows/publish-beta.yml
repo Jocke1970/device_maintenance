@@ -35,7 +35,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Read and validate beta version
+      - name: Read release version
         id: version
         shell: bash
         run: |
@@ -47,17 +47,17 @@ jobs:
           PY
           )"
 
-          case "$VERSION" in
-            *-beta.*) ;;
-            *)
-              echo "Refusing to publish non-beta manifest version: $VERSION"
-              exit 1
-              ;;
-          esac
-
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+          if [[ "$VERSION" =~ ^[0-9]{4}\.[0-9]{1,2}\.[0-9]+b[0-9]+$ ]] || [[ "$VERSION" == *-beta.* ]]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "Stable/release-candidate version $VERSION reached beta; prerelease publishing is intentionally skipped."
+          fi
+
       - name: Publish prerelease
+        if: steps.version.outputs.publish == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
