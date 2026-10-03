@@ -6,7 +6,7 @@ from homeassistant.const import Platform
 
 DOMAIN = "device_maintenance"
 NAME = "Device Maintenance"
-VERSION = "0.1.0-dev.16"
+VERSION = "2026.10.0"
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BUTTON, Platform.NUMBER]
 
