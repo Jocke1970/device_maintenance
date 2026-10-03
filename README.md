@@ -4,7 +4,7 @@
 
 A Home Assistant custom integration for self-learning device maintenance, runtime tracking, battery cycles, and service intervals.
 
-> **Status:** `2026.10.0` is the current stable release candidate on `dev`, prepared for promotion through `beta` to `main`.
+> **Status:** `2026.10.0` is the current stable release on `main`. `2026.10.1b1` is the documentation-cleanup prerelease candidate on `dev`.
 
 Device Maintenance is being rebuilt from a collection of YAML helpers, template sensors, scripts, and automations into a proper Home Assistant helper integration with persistent runtime state and a strategy-based backend.
 
@@ -27,8 +27,9 @@ Current goals:
 
 ## Current versions
 
-- stable release candidate: `2026.10.0`
-- current published beta: `0.1.0-beta.6`
+- stable: `2026.10.0`
+- beta candidate: `2026.10.1b1`
+- last legacy beta: `0.1.0-beta.6`
 - current development Lovelace card: `0.2.0-dev.11`
 
 The current backend provides:
@@ -64,8 +65,8 @@ The first real legacy `elapsed` migration, Garmin Fenix 7 Pro Sapphire, has also
 
 | Strategy | Use case | Current status |
 | --- | --- | --- |
-| `session_runtime` | Source entity reports the duration of the current usage session | Beta |
-| `elapsed` | Track wall-clock time since the previous maintenance action | Beta; legacy import available |
+| `session_runtime` | Source entity reports the duration of the current usage session | Stable |
+| `elapsed` | Track wall-clock time since the previous maintenance action | Stable; legacy import available |
 | `cumulative_runtime` | Source exposes a monotonically increasing usage counter | Planned |
 | adapters | Specialized sources such as Garmin Gear or Garmin Index Sleep | Planned |
 
@@ -127,9 +128,9 @@ The default history size is five samples and can be changed per tracker.
 
 ## Installation
 
-The first stable release is being prepared as `2026.10.0`.
+The current stable release is `2026.10.0`.
 
-For beta testing, HACS can track published GitHub prereleases when prerelease updates are enabled for the repository. Manual `beta` branch installation remains available as a recovery/testing path. See [Installation](docs/installation.md).
+Install the stable release through HACS. Users who deliberately test prereleases can enable prerelease updates for the repository. Manual branch/tag installation remains available as a recovery or development path. See [Installation](docs/installation.md).
 
 After installation, add a tracker from:
 
@@ -162,7 +163,7 @@ Feature work does not go directly to `beta` or `main`.
 
 ## Documentation
 
-- [Beta notes](docs/beta-notes.md)
+- [Release notes and beta history](docs/beta-notes.md)
 - [Installation](docs/installation.md)
 - [Configuration](docs/configuration.md)
 - [Architecture](docs/architecture.md)
@@ -178,7 +179,7 @@ The current direction is:
 3. add adapters for Garmin Gear and Garmin Index Sleep;
 4. validate the remaining special trackers and complete real-cycle parity tests;
 5. decide the release packaging/path for the Lovelace card;
-6. retire legacy import/YAML support before the stable release once migration is complete.
+6. retire legacy import/YAML compatibility only after the remaining migration scope is complete and a later release no longer needs it.
 
 ## License
 
