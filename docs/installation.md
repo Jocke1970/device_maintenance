@@ -1,6 +1,6 @@
 # Installation
 
-Device Maintenance supports HACS installation from published GitHub releases. The first stable release is `2026.10.0`; prerelease users can continue to opt into beta releases.
+Device Maintenance supports HACS installation from published GitHub releases. The current stable release is `2026.10.0`; prerelease users can opt into future beta releases.
 
 ## Beta install
 
