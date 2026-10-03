@@ -127,7 +127,7 @@ The default history size is five samples and can be changed per tracker.
 
 ## Installation
 
-The current published stable release is `2026.10.0`; `2026.10.1` is the documentation-only stable candidate.
+The current stable release is `2026.10.1`.
 
 Install the stable release through HACS. Users who deliberately test prereleases can enable prerelease updates for the repository. Manual branch/tag installation remains available as a recovery or development path. See [Installation](docs/installation.md).
 
