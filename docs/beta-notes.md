@@ -1,5 +1,19 @@
 # Release notes and beta history
 
+## 2026.10.1b1 — documentation cleanup
+
+This prerelease aligns the public documentation with the actual stable/HACS setup after `2026.10.0`. It does not intentionally change backend behavior.
+
+### Documentation fixes
+
+- stable HACS installation is now the primary installation path;
+- `main` is documented as the stable/default branch;
+- HACS release delivery and prerelease-switch behavior are described accurately;
+- `session_runtime` and `elapsed` are marked stable;
+- pre-stable wording in configuration, migration, and legacy-import docs is made historical;
+- the separately distributed Device Maintenance Card `0.2.0-dev.11` is explicitly documented.
+
+
 ## 2026.10.0 — stable
 
 The tested backend from `0.1.0-beta.6` was promoted as the first calendar-versioned stable release, `2026.10.0`.
