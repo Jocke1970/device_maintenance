@@ -4,7 +4,7 @@
 
 A Home Assistant custom integration for self-learning device maintenance, runtime tracking, battery cycles, and service intervals.
 
-> **Status:** `2026.10.0` is the current stable release on `main`. `2026.10.1b1` is the documentation-cleanup prerelease candidate on `dev`.
+> **Status:** `2026.10.1` is the documentation-only stable release candidate on `dev`, promoted from the validated `2026.10.1b1` prerelease.
 
 Device Maintenance is being rebuilt from a collection of YAML helpers, template sensors, scripts, and automations into a proper Home Assistant helper integration with persistent runtime state and a strategy-based backend.
 
@@ -27,8 +27,8 @@ Current goals:
 
 ## Current versions
 
-- stable: `2026.10.0`
-- beta candidate: `2026.10.1b1`
+- stable release candidate: `2026.10.1`
+- validated prerelease: `2026.10.1b1`
 - last legacy beta: `0.1.0-beta.6`
 - current development Lovelace card: `0.2.0-dev.11`
 
@@ -128,7 +128,7 @@ The default history size is five samples and can be changed per tracker.
 
 ## Installation
 
-The current stable release is `2026.10.0`.
+The current published stable release is `2026.10.0`; `2026.10.1` is the documentation-only stable candidate.
 
 Install the stable release through HACS. Users who deliberately test prereleases can enable prerelease updates for the repository. Manual branch/tag installation remains available as a recovery or development path. See [Installation](docs/installation.md).
 
