@@ -1,14 +1,16 @@
 # Device Maintenance release status
 
-The current published beta is `0.1.0-beta.6`.
+The current stable release is `2026.10.0`.
 
-The first calendar-versioned stable release candidate is `2026.10.0` and is being promoted through the normal branch flow:
+The historical beta line ended at `0.1.0-beta.6`. New prereleases use calendar-versioned beta identifiers such as `2026.10.1b1`.
+
+Development continues on `dev` as `2026.10.1-dev.1`.
+
+Release flow remains:
 
 ```text
 dev → beta → main
 ```
-
-Beta releases remain GitHub prereleases. Stable calendar versions are not published from `beta`; they are validated there and published only after promotion to `main`.
 
 The current Device Maintenance Card remains `0.2.0-dev.11` and is distributed separately from the backend integration.
 
