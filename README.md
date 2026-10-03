@@ -6,7 +6,7 @@ A Home Assistant custom integration for self-learning device maintenance, runtim
 
 > **Status:** `2026.10.1` is the current stable release. Stable releases are published from `main`; active development continues on `dev`.
 
-Device Maintenance is being rebuilt from a collection of YAML helpers, template sensors, scripts, and automations into a proper Home Assistant helper integration with persistent runtime state and a strategy-based backend.
+Device Maintenance replaces the earlier collection of YAML helpers, template sensors, scripts, and automations with a Home Assistant helper integration that keeps persistent runtime state in the backend and uses reusable maintenance strategies.
 
 ## What it does
 
