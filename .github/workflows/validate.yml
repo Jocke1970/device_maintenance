@@ -1,0 +1,46 @@
+name: Validate
+
+on:
+  push:
+    branches:
+      - dev
+      - beta
+      - main
+  pull_request:
+    branches:
+      - beta
+      - main
+
+jobs:
+  python:
+    name: Python syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Compile integration
+        run: python -m compileall -q custom_components/device_maintenance
+
+  hassfest:
+    name: Hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Run hassfest
+        uses: home-assistant/actions/hassfest@master
+
+  hacs:
+    name: HACS validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Run HACS validation
+        uses: hacs/action@main
+        with:
+          category: integration
+          # During active dev, repository topics and final brand assets are
+          # intentionally allowed to lag behind backend work. beta/main stay
+          # strict, so promotion still requires both to be ready.
+          ignore: ${{ github.ref_name == 'dev' && 'brands topics' || '' }}

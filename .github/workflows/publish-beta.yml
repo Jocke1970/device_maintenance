@@ -1,0 +1,75 @@
+name: Publish beta
+
+on:
+  push:
+    branches:
+      - beta
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    name: Validate beta release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Compile integration
+        run: python -m compileall -q custom_components/device_maintenance
+
+      - name: Run hassfest
+        uses: home-assistant/actions/hassfest@master
+
+      - name: Run HACS validation
+        uses: hacs/action@main
+        with:
+          category: integration
+
+  publish:
+    name: Publish GitHub prerelease
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Read release version
+        id: version
+        shell: bash
+        run: |
+          VERSION="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path("custom_components/device_maintenance/manifest.json").read_text())
+          print(data["version"])
+          PY
+          )"
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          if [[ "$VERSION" =~ ^[0-9]{4}\.[0-9]{1,2}\.[0-9]+b[0-9]+$ ]] || [[ "$VERSION" == *-beta.* ]]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "Stable/release-candidate version $VERSION reached beta; prerelease publishing is intentionally skipped."
+          fi
+
+      - name: Publish prerelease
+        if: steps.version.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        shell: bash
+        run: |
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "Release $VERSION already exists; nothing to do."
+            exit 0
+          fi
+
+          gh release create "$VERSION" \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --title "$VERSION" \
+            --generate-notes
