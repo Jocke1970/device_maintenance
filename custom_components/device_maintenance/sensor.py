@@ -89,6 +89,27 @@ class DeviceMaintenanceSensor(SensorEntity):
             "battery_entity": self.manager.battery_entity_id,
             "battery_percent": round(battery) if battery is not None else None,
             "usage_mode": self.manager.usage_mode,
+            "usage_entity": self.manager.usage_entity_id,
+            "usage_start_threshold": (
+                self.manager.usage_start_threshold
+                if self.manager.automatic_usage_enabled
+                else None
+            ),
+            "usage_min_active_seconds": (
+                self.manager.usage_min_active_seconds
+                if self.manager.automatic_usage_enabled
+                else None
+            ),
+            "usage_rearm_threshold": (
+                self.manager.usage_rearm_threshold
+                if self.manager.automatic_usage_enabled
+                else None
+            ),
+            "usage_rearm_seconds": (
+                self.manager.usage_rearm_seconds
+                if self.manager.automatic_usage_enabled
+                else None
+            ),
             "usage_count": self.manager.state.usage_count if self.manager.usage_enabled else None,
             "usage_sample_count": self.manager.usage_sample_count if self.manager.usage_enabled else 0,
             "usage_confidence": self.manager.usage_confidence if self.manager.usage_enabled else None,
