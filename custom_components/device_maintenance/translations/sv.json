@@ -95,6 +95,17 @@
           "battery_entity": "Batterisensor i Home Assistant (valfri)",
           "usage_mode": "Användningsräkning"
         }
+      },
+      "usage_activity": {
+        "title": "Automatisk användningsräkning",
+        "description": "Räkna en användning när en numerisk Home Assistant-sensor ligger över starttröskeln tillräckligt länge. Efter räknad användning tillåts nästa först när sensorn legat under återarmeringströskeln under inställd tid.",
+        "data": {
+          "usage_entity": "Aktivitetssensor",
+          "usage_start_threshold": "Starttröskel",
+          "usage_min_active_seconds": "Minsta aktiva tid",
+          "usage_rearm_threshold": "Återarmeringströskel",
+          "usage_rearm_seconds": "Återarmeringstid"
+        }
       }
     },
     "abort": {
@@ -105,7 +116,8 @@
     "error": {
       "legacy_tracker_unavailable": "Legacy-enheten är inte längre tillgänglig.",
       "invalid_initial_action": "Datumet/tiden kunde inte tolkas.",
-      "future_initial_action": "Senaste åtgärden kan inte ligga i framtiden."
+      "future_initial_action": "Senaste åtgärden kan inte ligga i framtiden.",
+      "invalid_usage_thresholds": "Återarmeringströskeln måste vara lägre än starttröskeln."
     }
   },
   "options": {
@@ -127,7 +139,12 @@
           "history_size": "Intervall att lära från",
           "max_session_seconds": "Maximal accepterad sessionsförändring",
           "battery_mode": "Batterikälla",
-          "usage_mode": "Användningsräkning"
+          "usage_mode": "Användningsräkning",
+          "usage_entity": "Sensor för automatisk användning",
+          "usage_start_threshold": "Automatisk starttröskel",
+          "usage_min_active_seconds": "Minsta aktiva tid",
+          "usage_rearm_threshold": "Automatisk återarmeringströskel",
+          "usage_rearm_seconds": "Återarmeringstid"
         }
       }
     }
@@ -166,7 +183,8 @@
     "usage_mode": {
       "options": {
         "none": "Av",
-        "manual": "Manuell +1-räkning"
+        "manual": "Manuell +1-räkning",
+        "entity_activity": "Automatiskt från Home Assistant-sensor"
       }
     }
   }
