@@ -4,7 +4,7 @@
 
 A Home Assistant custom integration for self-learning device maintenance, runtime tracking, battery cycles, and service intervals.
 
-> **Status:** `2026.10.1` is the current stable release. Stable releases are published from `main`; active development continues on `dev` as `2026.10.2-dev.1`.
+> **Status:** `2026.10.1` is the current stable release. Stable releases are published from `main`; active development continues on `dev` as `2026.10.2-dev.2`.
 
 Device Maintenance replaces the earlier collection of YAML helpers, template sensors, scripts, and automations with a Home Assistant helper integration that keeps persistent runtime state in the backend and uses reusable maintenance strategies.
 
@@ -28,9 +28,9 @@ Current goals:
 ## Current versions
 
 - stable backend: `2026.10.1`
-- dev backend: `2026.10.2-dev.1`
+- dev backend: `2026.10.2-dev.2`
 - historical pre-calendar beta line ended at `0.1.0-beta.6`
-- current development Lovelace card: `0.2.0-dev.11`
+- current development Lovelace card: `0.2.0-dev.12`
 
 The current backend provides:
 
@@ -47,7 +47,7 @@ The current backend provides:
 - optional explicit linking to a physical Home Assistant device through an entity;
 - an explicit initial last-action choice for new `elapsed` trackers (`Now` or a known date/time);
 - configurable battery source: none, Home Assistant percentage sensor, or manually entered battery percentage;
-- optional manual usage counting with a native `+1` action, editable current count, and learned usages-per-maintenance-cycle history;
+- optional usage counting with either a native manual `+1` action or automatic activity detection from a numeric Home Assistant sensor, plus editable current count and learned usages-per-maintenance-cycle history;
 - adaptive interval learning from recent completed cycles;
 - `session_runtime` and `elapsed` strategies;
 - state-safe legacy import for ordinary `elapsed` trackers;
@@ -86,7 +86,7 @@ A tracker describes both **how the interval is measured** and **what is actually
 
 Battery information is an independent capability. A tracker can use no battery percentage, a Home Assistant battery sensor, or a manually entered battery percentage. Manual battery percentage is runtime state exposed through a native number entity, so it can be updated without reopening tracker configuration.
 
-Usage counting is also independent. When manual usage counting is enabled, Device Maintenance creates a `+1 usage` button and an editable current-count number. Registering the normal maintenance action archives the non-zero usage count for that completed cycle, resets the current count, and learns the average number of usages per maintenance cycle once at least two samples exist.
+Usage counting is also independent. It can be manual (`+1`) or automatic from a numeric Home Assistant sensor. Automatic mode qualifies one usage only after the source stays above a configurable start threshold for a minimum time, then requires a sustained low value below a separate re-arm threshold before another usage can be counted. Registering the normal maintenance action archives the non-zero usage count for that completed cycle, resets the current count, and learns the average number of usages per maintenance cycle once at least two samples exist.
 
 This allows, for example, a device with no visible battery percentage to learn from usage count alone, while another device can combine manually observed battery percentage with usage counting.
 
