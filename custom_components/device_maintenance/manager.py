@@ -7,7 +7,7 @@ from statistics import fmean
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.event import async_track_state_change_event
+from homeassistant.helpers.event import async_call_later, async_track_state_change_event
 
 from .const import (
     ACTION_ICON_BY_ITEM_TYPE,
@@ -25,19 +25,30 @@ from .const import (
     CONF_NAME,
     CONF_PICTURE_KEY,
     CONF_UI_GROUP,
+    CONF_USAGE_ENTITY,
+    CONF_USAGE_MIN_ACTIVE_SECONDS,
     CONF_USAGE_MODE,
+    CONF_USAGE_REARM_SECONDS,
+    CONF_USAGE_REARM_THRESHOLD,
+    CONF_USAGE_START_THRESHOLD,
     DEFAULT_ACTION_LABEL,
     DEFAULT_BATTERY_MODE,
     DEFAULT_HISTORY_SIZE,
     DEFAULT_MAINTENANCE_ITEM_QUANTITY,
     DEFAULT_MAINTENANCE_ITEM_TYPE,
+    DEFAULT_USAGE_MIN_ACTIVE_SECONDS,
     DEFAULT_USAGE_MODE,
+    DEFAULT_USAGE_REARM_SECONDS,
+    DEFAULT_USAGE_REARM_THRESHOLD,
+    DEFAULT_USAGE_START_THRESHOLD,
     ITEM_TYPE_BLADE,
     ITEM_TYPE_BUILT_IN_BATTERY,
     ITEM_TYPE_CARTRIDGE,
     ITEM_TYPE_CO2_CYLINDER,
     ITEM_TYPE_FILTER,
     ITEM_TYPE_REPLACEABLE_BATTERY,
+    USAGE_MODE_ENTITY_ACTIVITY,
+    USAGE_MODE_MANUAL,
     USAGE_MODE_NONE,
 )
 from .models import MaintenanceSnapshot, RuntimeState
@@ -61,6 +72,10 @@ class DeviceMaintenanceManager:
         self.state: RuntimeState = store.state_for(entry.entry_id)
         self._listeners: set[Callable[[], None]] = set()
         self._remove_battery_listener = None
+        self._remove_usage_listener = None
+        self._cancel_usage_active_timer = None
+        self._cancel_usage_rearm_timer = None
+        self._usage_armed = True
         self.strategy = create_strategy(
             hass,
             entry,
@@ -115,6 +130,66 @@ class DeviceMaintenanceManager:
     def usage_enabled(self) -> bool:
         """Return whether usage counting is enabled."""
         return self.usage_mode != USAGE_MODE_NONE
+
+    @property
+    def manual_usage_enabled(self) -> bool:
+        """Return whether manual +1 usage counting is enabled."""
+        return self.usage_mode == USAGE_MODE_MANUAL
+
+    @property
+    def automatic_usage_enabled(self) -> bool:
+        """Return whether entity-activity usage counting is enabled."""
+        return self.usage_mode == USAGE_MODE_ENTITY_ACTIVITY
+
+    @property
+    def usage_entity_id(self) -> str | None:
+        """Return the numeric entity used for automatic usage counting."""
+        if not self.automatic_usage_enabled:
+            return None
+        entity_id = self.entry.options.get(CONF_USAGE_ENTITY)
+        return str(entity_id) if entity_id else None
+
+    @property
+    def usage_start_threshold(self) -> float:
+        """Return threshold that starts usage qualification."""
+        return float(
+            self.entry.options.get(
+                CONF_USAGE_START_THRESHOLD,
+                DEFAULT_USAGE_START_THRESHOLD,
+            )
+        )
+
+    @property
+    def usage_min_active_seconds(self) -> float:
+        """Return minimum time above the start threshold before counting."""
+        return float(
+            self.entry.options.get(
+                CONF_USAGE_MIN_ACTIVE_SECONDS,
+                DEFAULT_USAGE_MIN_ACTIVE_SECONDS,
+            )
+        )
+
+    @property
+    def usage_rearm_threshold(self) -> float:
+        """Return safe threshold below which a new usage may be re-armed."""
+        configured = float(
+            self.entry.options.get(
+                CONF_USAGE_REARM_THRESHOLD,
+                DEFAULT_USAGE_REARM_THRESHOLD,
+            )
+        )
+        margin = max(0.1, abs(self.usage_start_threshold) * 0.000001)
+        return min(configured, self.usage_start_threshold - margin)
+
+    @property
+    def usage_rearm_seconds(self) -> float:
+        """Return required low-power time before re-arming."""
+        return float(
+            self.entry.options.get(
+                CONF_USAGE_REARM_SECONDS,
+                DEFAULT_USAGE_REARM_SECONDS,
+            )
+        )
 
     @property
     def battery_entity_id(self) -> str | None:
@@ -197,6 +272,7 @@ class DeviceMaintenanceManager:
         return (
             self.explicit_linked_entity_id
             or self.source_entity_id
+            or self.usage_entity_id
             or self.battery_entity_id
         )
 
@@ -260,6 +336,13 @@ class DeviceMaintenanceManager:
                 [self.battery_entity_id],
                 self._async_auxiliary_state_changed,
             )
+        if self.usage_entity_id:
+            self._initialize_usage_armed_state()
+            self._remove_usage_listener = async_track_state_change_event(
+                self.hass,
+                [self.usage_entity_id],
+                self._async_usage_state_changed,
+            )
 
     async def async_stop(self) -> None:
         """Stop all listeners."""
@@ -267,6 +350,10 @@ class DeviceMaintenanceManager:
         if self._remove_battery_listener is not None:
             self._remove_battery_listener()
             self._remove_battery_listener = None
+        if self._remove_usage_listener is not None:
+            self._remove_usage_listener()
+            self._remove_usage_listener = None
+        self._cancel_usage_timers()
 
     async def async_register_action(self) -> None:
         """Register maintenance action and close the current usage cycle."""
@@ -313,6 +400,118 @@ class DeviceMaintenanceManager:
             )
             self.state.usage_history = self.state.usage_history[-history_size:]
         self.state.usage_count = 0
+
+    @callback
+    def _initialize_usage_armed_state(self) -> None:
+        """Avoid counting an activity already in progress when HA starts."""
+        if not self.usage_entity_id:
+            self._usage_armed = True
+            return
+        state = self.hass.states.get(self.usage_entity_id)
+        if state is None or state.state in {"unknown", "unavailable"}:
+            self._usage_armed = True
+            return
+        try:
+            value = float(state.state)
+        except (TypeError, ValueError):
+            self._usage_armed = True
+            return
+        self._usage_armed = value <= self.usage_rearm_threshold
+
+    @callback
+    def _async_usage_state_changed(self, event) -> None:
+        """Track one automatic usage from a numeric activity entity."""
+        new_state = event.data.get("new_state")
+        if new_state is None or new_state.state in {"unknown", "unavailable"}:
+            self._cancel_usage_active()
+            self._cancel_usage_rearm()
+            return
+
+        try:
+            value = float(new_state.state)
+        except (TypeError, ValueError):
+            self._cancel_usage_active()
+            self._cancel_usage_rearm()
+            return
+
+        if self._usage_armed:
+            self._cancel_usage_rearm()
+            if value >= self.usage_start_threshold:
+                if self._cancel_usage_active_timer is None:
+                    self._cancel_usage_active_timer = async_call_later(
+                        self.hass,
+                        self.usage_min_active_seconds,
+                        self._async_confirm_usage_active,
+                    )
+            else:
+                self._cancel_usage_active()
+            return
+
+        self._cancel_usage_active()
+        if value <= self.usage_rearm_threshold:
+            if self._cancel_usage_rearm_timer is None:
+                self._cancel_usage_rearm_timer = async_call_later(
+                    self.hass,
+                    self.usage_rearm_seconds,
+                    self._async_confirm_usage_rearm,
+                )
+        else:
+            self._cancel_usage_rearm()
+
+    async def _async_confirm_usage_active(self, _now) -> None:
+        """Count a usage if the source stayed active long enough."""
+        self._cancel_usage_active_timer = None
+        if not self._usage_armed or not self.usage_entity_id:
+            return
+
+        state = self.hass.states.get(self.usage_entity_id)
+        if state is None or state.state in {"unknown", "unavailable"}:
+            return
+        try:
+            value = float(state.state)
+        except (TypeError, ValueError):
+            return
+        if value < self.usage_start_threshold:
+            return
+
+        self._usage_armed = False
+        await self.async_increment_usage()
+
+    async def _async_confirm_usage_rearm(self, _now) -> None:
+        """Re-arm automatic counting after a sustained low state."""
+        self._cancel_usage_rearm_timer = None
+        if self._usage_armed or not self.usage_entity_id:
+            return
+
+        state = self.hass.states.get(self.usage_entity_id)
+        if state is None or state.state in {"unknown", "unavailable"}:
+            return
+        try:
+            value = float(state.state)
+        except (TypeError, ValueError):
+            return
+        if value <= self.usage_rearm_threshold:
+            self._usage_armed = True
+
+    @callback
+    def _cancel_usage_active(self) -> None:
+        """Cancel pending usage qualification."""
+        if self._cancel_usage_active_timer is not None:
+            self._cancel_usage_active_timer()
+            self._cancel_usage_active_timer = None
+
+    @callback
+    def _cancel_usage_rearm(self) -> None:
+        """Cancel pending usage re-arm."""
+        if self._cancel_usage_rearm_timer is not None:
+            self._cancel_usage_rearm_timer()
+            self._cancel_usage_rearm_timer = None
+
+    @callback
+    def _cancel_usage_timers(self) -> None:
+        """Cancel all pending automatic-usage timers."""
+        self._cancel_usage_active()
+        self._cancel_usage_rearm()
 
     @callback
     def async_add_listener(self, listener: Callable[[], None]) -> Callable[[], None]:

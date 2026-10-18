@@ -175,13 +175,13 @@ The Device Maintenance Lovelace card is currently distributed separately from th
 Current tested frontend:
 
 ```text
-Device Maintenance Card 0.2.0-dev.11
+Device Maintenance Card 0.2.0-dev.12
 ```
 
 The card resource is:
 
 ```text
-/local/device_maintenance_card/device-maintenance-card.js?v=0.2.0-dev.11
+/local/device_maintenance_card/device-maintenance-card.js?v=0.2.0-dev.12
 ```
 
 Resource type:

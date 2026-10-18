@@ -49,7 +49,12 @@ from .const import (
     CONF_SOURCE_ENTITY,
     CONF_STRATEGY,
     CONF_UI_GROUP,
+    CONF_USAGE_ENTITY,
+    CONF_USAGE_MIN_ACTIVE_SECONDS,
     CONF_USAGE_MODE,
+    CONF_USAGE_REARM_SECONDS,
+    CONF_USAGE_REARM_THRESHOLD,
+    CONF_USAGE_START_THRESHOLD,
     DEFAULT_ACTION_LABEL,
     DEFAULT_BATTERY_MODE,
     DEFAULT_ELAPSED_FALLBACK_SECONDS,
@@ -58,7 +63,11 @@ from .const import (
     DEFAULT_MAINTENANCE_ITEM_TYPE,
     DEFAULT_MAX_SESSION_SECONDS,
     DEFAULT_RUNTIME_FALLBACK_SECONDS,
+    DEFAULT_USAGE_MIN_ACTIVE_SECONDS,
     DEFAULT_USAGE_MODE,
+    DEFAULT_USAGE_REARM_SECONDS,
+    DEFAULT_USAGE_REARM_THRESHOLD,
+    DEFAULT_USAGE_START_THRESHOLD,
     DOMAIN,
     INITIAL_ACTION_CUSTOM,
     INITIAL_ACTION_MODES,
@@ -69,6 +78,7 @@ from .const import (
     MAINTENANCE_ITEM_TYPES,
     STRATEGY_ELAPSED,
     STRATEGY_SESSION_RUNTIME,
+    USAGE_MODE_ENTITY_ACTIVITY,
     USAGE_MODE_NONE,
     USAGE_MODES,
 )
@@ -235,6 +245,8 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 else None
             )
             self._base[CONF_USAGE_MODE] = str(user_input[CONF_USAGE_MODE])
+            if self._base[CONF_USAGE_MODE] == USAGE_MODE_ENTITY_ACTIVITY:
+                return await self.async_step_usage_activity()
             return await self._async_strategy_step()
 
         schema = vol.Schema(
@@ -265,6 +277,88 @@ class DeviceMaintenanceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }
         )
         return self.async_show_form(step_id="capabilities", data_schema=schema)
+
+    async def async_step_usage_activity(
+        self,
+        user_input: dict[str, Any] | None = None,
+    ) -> ConfigFlowResult:
+        """Configure automatic usage counting from a numeric entity."""
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            start_threshold = float(user_input[CONF_USAGE_START_THRESHOLD])
+            rearm_threshold = float(user_input[CONF_USAGE_REARM_THRESHOLD])
+            if rearm_threshold >= start_threshold:
+                errors["base"] = "invalid_usage_thresholds"
+            else:
+                self._base[CONF_USAGE_ENTITY] = user_input[CONF_USAGE_ENTITY]
+                self._base[CONF_USAGE_START_THRESHOLD] = start_threshold
+                self._base[CONF_USAGE_MIN_ACTIVE_SECONDS] = float(
+                    user_input[CONF_USAGE_MIN_ACTIVE_SECONDS]
+                )
+                self._base[CONF_USAGE_REARM_THRESHOLD] = rearm_threshold
+                self._base[CONF_USAGE_REARM_SECONDS] = float(
+                    user_input[CONF_USAGE_REARM_SECONDS]
+                )
+                return await self._async_strategy_step()
+
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_USAGE_ENTITY): EntitySelector(
+                    EntitySelectorConfig(domain="sensor")
+                ),
+                vol.Required(
+                    CONF_USAGE_START_THRESHOLD,
+                    default=DEFAULT_USAGE_START_THRESHOLD,
+                ): NumberSelector(
+                    NumberSelectorConfig(
+                        min=-1000000,
+                        max=1000000,
+                        step=0.1,
+                        mode=NumberSelectorMode.BOX,
+                    )
+                ),
+                vol.Required(
+                    CONF_USAGE_MIN_ACTIVE_SECONDS,
+                    default=DEFAULT_USAGE_MIN_ACTIVE_SECONDS,
+                ): NumberSelector(
+                    NumberSelectorConfig(
+                        min=0.5,
+                        max=3600,
+                        step=0.5,
+                        mode=NumberSelectorMode.BOX,
+                        unit_of_measurement="s",
+                    )
+                ),
+                vol.Required(
+                    CONF_USAGE_REARM_THRESHOLD,
+                    default=DEFAULT_USAGE_REARM_THRESHOLD,
+                ): NumberSelector(
+                    NumberSelectorConfig(
+                        min=-1000000,
+                        max=1000000,
+                        step=0.1,
+                        mode=NumberSelectorMode.BOX,
+                    )
+                ),
+                vol.Required(
+                    CONF_USAGE_REARM_SECONDS,
+                    default=DEFAULT_USAGE_REARM_SECONDS,
+                ): NumberSelector(
+                    NumberSelectorConfig(
+                        min=0.5,
+                        max=3600,
+                        step=0.5,
+                        mode=NumberSelectorMode.BOX,
+                        unit_of_measurement="s",
+                    )
+                ),
+            }
+        )
+        return self.async_show_form(
+            step_id="usage_activity",
+            data_schema=schema,
+            errors=errors,
+        )
 
     async def _async_strategy_step(self) -> ConfigFlowResult:
         """Continue to the fields required by the selected tracking strategy."""
@@ -675,6 +769,19 @@ class DeviceMaintenanceOptionsFlow(OptionsFlowWithReload):
                     else None
                 ),
                 CONF_USAGE_MODE: str(user_input[CONF_USAGE_MODE]),
+                CONF_USAGE_ENTITY: user_input.get(CONF_USAGE_ENTITY),
+                CONF_USAGE_START_THRESHOLD: float(
+                    user_input[CONF_USAGE_START_THRESHOLD]
+                ),
+                CONF_USAGE_MIN_ACTIVE_SECONDS: float(
+                    user_input[CONF_USAGE_MIN_ACTIVE_SECONDS]
+                ),
+                CONF_USAGE_REARM_THRESHOLD: float(
+                    user_input[CONF_USAGE_REARM_THRESHOLD]
+                ),
+                CONF_USAGE_REARM_SECONDS: float(
+                    user_input[CONF_USAGE_REARM_SECONDS]
+                ),
                 CONF_ACTION_LABEL: user_input[CONF_ACTION_LABEL],
                 CONF_HISTORY_SIZE: int(user_input[CONF_HISTORY_SIZE]),
             }
@@ -758,6 +865,78 @@ class DeviceMaintenanceOptionsFlow(OptionsFlowWithReload):
                     options=USAGE_MODES,
                     mode=SelectSelectorMode.DROPDOWN,
                     translation_key="usage_mode",
+                )
+            ),
+            vol.Optional(
+                CONF_USAGE_ENTITY,
+                description={
+                    "suggested_value": current.get(CONF_USAGE_ENTITY)
+                },
+            ): EntitySelector(EntitySelectorConfig(domain="sensor")),
+            vol.Required(
+                CONF_USAGE_START_THRESHOLD,
+                default=float(
+                    current.get(
+                        CONF_USAGE_START_THRESHOLD,
+                        DEFAULT_USAGE_START_THRESHOLD,
+                    )
+                ),
+            ): NumberSelector(
+                NumberSelectorConfig(
+                    min=-1000000,
+                    max=1000000,
+                    step=0.1,
+                    mode=NumberSelectorMode.BOX,
+                )
+            ),
+            vol.Required(
+                CONF_USAGE_MIN_ACTIVE_SECONDS,
+                default=float(
+                    current.get(
+                        CONF_USAGE_MIN_ACTIVE_SECONDS,
+                        DEFAULT_USAGE_MIN_ACTIVE_SECONDS,
+                    )
+                ),
+            ): NumberSelector(
+                NumberSelectorConfig(
+                    min=0.5,
+                    max=3600,
+                    step=0.5,
+                    mode=NumberSelectorMode.BOX,
+                    unit_of_measurement="s",
+                )
+            ),
+            vol.Required(
+                CONF_USAGE_REARM_THRESHOLD,
+                default=float(
+                    current.get(
+                        CONF_USAGE_REARM_THRESHOLD,
+                        DEFAULT_USAGE_REARM_THRESHOLD,
+                    )
+                ),
+            ): NumberSelector(
+                NumberSelectorConfig(
+                    min=-1000000,
+                    max=1000000,
+                    step=0.1,
+                    mode=NumberSelectorMode.BOX,
+                )
+            ),
+            vol.Required(
+                CONF_USAGE_REARM_SECONDS,
+                default=float(
+                    current.get(
+                        CONF_USAGE_REARM_SECONDS,
+                        DEFAULT_USAGE_REARM_SECONDS,
+                    )
+                ),
+            ): NumberSelector(
+                NumberSelectorConfig(
+                    min=0.5,
+                    max=3600,
+                    step=0.5,
+                    mode=NumberSelectorMode.BOX,
+                    unit_of_measurement="s",
                 )
             ),
             vol.Required(
@@ -893,6 +1072,31 @@ def _item_options(base: dict[str, Any]) -> dict[str, Any]:
         ),
         CONF_USAGE_MODE: str(
             base.get(CONF_USAGE_MODE, DEFAULT_USAGE_MODE)
+        ),
+        CONF_USAGE_ENTITY: base.get(CONF_USAGE_ENTITY),
+        CONF_USAGE_START_THRESHOLD: float(
+            base.get(
+                CONF_USAGE_START_THRESHOLD,
+                DEFAULT_USAGE_START_THRESHOLD,
+            )
+        ),
+        CONF_USAGE_MIN_ACTIVE_SECONDS: float(
+            base.get(
+                CONF_USAGE_MIN_ACTIVE_SECONDS,
+                DEFAULT_USAGE_MIN_ACTIVE_SECONDS,
+            )
+        ),
+        CONF_USAGE_REARM_THRESHOLD: float(
+            base.get(
+                CONF_USAGE_REARM_THRESHOLD,
+                DEFAULT_USAGE_REARM_THRESHOLD,
+            )
+        ),
+        CONF_USAGE_REARM_SECONDS: float(
+            base.get(
+                CONF_USAGE_REARM_SECONDS,
+                DEFAULT_USAGE_REARM_SECONDS,
+            )
         ),
     }
 

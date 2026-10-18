@@ -115,7 +115,7 @@ For each config entry:
 6. strategy changes are persisted through the shared store;
 7. unloading the entry stops listeners and flushes state.
 
-The manager owns integration-wide behavior such as battery-source handling, usage counting and usage learning, presentation metadata, and entity notifications. The strategy owns the meaning of runtime and time-based maintenance intervals.
+The manager owns integration-wide behavior such as battery-source handling, manual or entity-activity usage counting, usage learning, presentation metadata, and entity notifications. The strategy owns the meaning of runtime and time-based maintenance intervals.
 
 ## Strategy contract
 
@@ -224,8 +224,10 @@ Each config entry always creates:
 Optional capabilities may also create:
 
 - a manual battery-percentage number entity;
-- a manual usage-count number entity;
-- a +1 usage button.
+- a usage-count number entity for correction;
+- a +1 usage button when manual counting is selected.
+
+Automatic usage mode listens to one numeric Home Assistant entity. A use is counted after a sustained high threshold and the detector remains disarmed until a sustained low re-arm threshold is observed. This debounce/re-arm state is runtime control state only; the learned usage count/history remains persisted in the normal Device Maintenance store.
 
 Usage-count history is owned by the manager and stored beside the normal runtime state. It is intentionally orthogonal to the time/runtime strategy, so a tracker can learn usages per maintenance cycle regardless of whether the main strategy is `elapsed` or `session_runtime`.
 
@@ -260,7 +262,7 @@ This deliberately keeps picture ownership inside Device Maintenance rather than 
 
 The dynamic Device Maintenance Lovelace card is now a thin client of the integration-native sensor/button contract rather than the owner of maintenance logic.
 
-Current development-card behavior (`0.2.0-dev.11`) includes:
+Current development-card behavior (`0.2.0-dev.12`) includes:
 
 - dynamic discovery of Device Maintenance sensors;
 - action-button pairing by `entry_id`;

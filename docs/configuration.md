@@ -31,13 +31,19 @@ Changing manual battery percentage only updates the observed battery state. It d
 
 ### Choosing usage counting
 
-Choose **Manual +1 counting** when the number of uses is meaningful for the maintenance cycle.
+Choose **Manual +1 counting** when the number of uses is meaningful for the maintenance cycle and no suitable Home Assistant activity sensor exists.
 
-When enabled, Device Maintenance creates:
+Choose **Automatic from Home Assistant sensor** when a numeric sensor can reliably identify one real use. Automatic mode uses:
 
-- a **+1 usage** button;
-- an editable number for the current usage count;
-- learned usage-per-cycle metadata after completed maintenance cycles.
+- an activity sensor;
+- a start threshold;
+- a minimum time continuously above the start threshold;
+- a lower re-arm threshold;
+- a minimum time continuously below the re-arm threshold.
+
+One usage is counted only after the high condition survives the configured minimum active time. Further high values are ignored until the source has remained below the re-arm threshold for the configured re-arm time. This prevents repeated heater/motor pulses during one physical use from being counted several times.
+
+Both manual and automatic modes create an editable number for the current usage count and learn usages per maintenance cycle. Manual mode additionally creates the native **+1 usage** button.
 
 With Device Maintenance Card `0.2.0-dev.10` or later, both the editable count and the **+1** control are available directly in the card.
 
@@ -217,12 +223,15 @@ Battery percentage is contextual data only. It does not automatically infer that
 
 ### Usage counting
 
-Usage counting is another independent optional capability. The current stable implementation provides manual counting.
+Usage counting is another independent optional capability.
 
-When enabled, the tracker creates:
+Available modes are:
 
-- a **+1 usage** button;
-- an editable **current usage count** number for corrections.
+- **Off**;
+- **Manual +1 counting**;
+- **Automatic from Home Assistant sensor**.
+
+Manual mode creates a **+1 usage** button. Both active modes create an editable **current usage count** number for corrections. Automatic mode increments that count from a numeric source using configurable high-duration and low-duration qualification.
 
 The current count is persisted in runtime state. Pressing the normal maintenance action closes the current usage cycle: a non-zero count is appended to `usage_history`, the current count resets to zero, and older usage samples are trimmed to the tracker's configured history size.
 
@@ -231,6 +240,21 @@ Usage prediction starts after two completed non-zero cycles. The sensor then exp
 A zero-use maintenance action is not added to usage history. This avoids teaching the model from accidental or immediately repeated maintenance actions.
 
 Disabling usage counting does not erase stored usage state; re-enabling it resumes from the persisted values.
+
+### Automatic usage example: TASSIMO coffee machine
+
+A power sensor can be used to count completed brew starts without counting short heater spikes as separate uses. Initial test values for TASSIMO My Way 2 are:
+
+```text
+Usage mode: Automatic from Home Assistant sensor
+Activity sensor: power sensor for the machine
+Start threshold: 1000 W
+Minimum active time: 5 s
+Re-arm threshold: 50 W
+Re-arm time: 15 s
+```
+
+These are deliberately configurable because drink size, strength, temperature, and appliance behavior can change the power profile. A short power spike above 1000 W that lasts less than 5 seconds is ignored; after one counted brew the detector stays disarmed until power remains below 50 W for 15 seconds.
 
 ### Initial last action
 
