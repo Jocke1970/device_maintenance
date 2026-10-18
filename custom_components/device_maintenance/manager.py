@@ -171,13 +171,15 @@ class DeviceMaintenanceManager:
 
     @property
     def usage_rearm_threshold(self) -> float:
-        """Return threshold below which a new usage may be re-armed."""
-        return float(
+        """Return safe threshold below which a new usage may be re-armed."""
+        configured = float(
             self.entry.options.get(
                 CONF_USAGE_REARM_THRESHOLD,
                 DEFAULT_USAGE_REARM_THRESHOLD,
             )
         )
+        margin = max(0.1, abs(self.usage_start_threshold) * 0.000001)
+        return min(configured, self.usage_start_threshold - margin)
 
     @property
     def usage_rearm_seconds(self) -> float:
@@ -335,6 +337,7 @@ class DeviceMaintenanceManager:
                 self._async_auxiliary_state_changed,
             )
         if self.usage_entity_id:
+            self._initialize_usage_armed_state()
             self._remove_usage_listener = async_track_state_change_event(
                 self.hass,
                 [self.usage_entity_id],
@@ -397,6 +400,23 @@ class DeviceMaintenanceManager:
             )
             self.state.usage_history = self.state.usage_history[-history_size:]
         self.state.usage_count = 0
+
+    @callback
+    def _initialize_usage_armed_state(self) -> None:
+        """Avoid counting an activity already in progress when HA starts."""
+        if not self.usage_entity_id:
+            self._usage_armed = True
+            return
+        state = self.hass.states.get(self.usage_entity_id)
+        if state is None or state.state in {"unknown", "unavailable"}:
+            self._usage_armed = True
+            return
+        try:
+            value = float(state.state)
+        except (TypeError, ValueError):
+            self._usage_armed = True
+            return
+        self._usage_armed = value <= self.usage_rearm_threshold
 
     @callback
     def _async_usage_state_changed(self, event) -> None:
