@@ -20,7 +20,7 @@ async def async_setup_entry(
     """Set up Device Maintenance buttons."""
     manager: DeviceMaintenanceManager = entry.runtime_data
     entities: list[ButtonEntity] = [DeviceMaintenanceActionButton(hass, manager)]
-    if manager.usage_enabled:
+    if manager.manual_usage_enabled:
         entities.append(DeviceMaintenanceUsageButton(hass, manager))
     async_add_entities(entities)
 
