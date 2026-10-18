@@ -262,7 +262,7 @@ This deliberately keeps picture ownership inside Device Maintenance rather than 
 
 The dynamic Device Maintenance Lovelace card is now a thin client of the integration-native sensor/button contract rather than the owner of maintenance logic.
 
-Current development-card behavior (`0.2.0-dev.11`) includes:
+Current development-card behavior (`0.2.0-dev.12`) includes:
 
 - dynamic discovery of Device Maintenance sensors;
 - action-button pairing by `entry_id`;
