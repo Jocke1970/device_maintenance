@@ -95,6 +95,17 @@
           "battery_entity": "Home Assistant battery sensor (optional)",
           "usage_mode": "Usage counting"
         }
+      },
+      "usage_activity": {
+        "title": "Automatic usage counting",
+        "description": "Count one usage when a numeric Home Assistant sensor stays above the start threshold long enough. After counting, a new usage is allowed only after the sensor stays below the re-arm threshold for the configured time.",
+        "data": {
+          "usage_entity": "Activity sensor",
+          "usage_start_threshold": "Start threshold",
+          "usage_min_active_seconds": "Minimum active time",
+          "usage_rearm_threshold": "Re-arm threshold",
+          "usage_rearm_seconds": "Re-arm time"
+        }
       }
     },
     "abort": {
@@ -105,7 +116,8 @@
     "error": {
       "legacy_tracker_unavailable": "The legacy tracker is no longer available.",
       "invalid_initial_action": "The date/time could not be parsed.",
-      "future_initial_action": "The last maintenance action cannot be in the future."
+      "future_initial_action": "The last maintenance action cannot be in the future.",
+      "invalid_usage_thresholds": "The re-arm threshold must be lower than the start threshold."
     }
   },
   "options": {
@@ -127,7 +139,12 @@
           "history_size": "Intervals to learn from",
           "max_session_seconds": "Maximum accepted session delta",
           "battery_mode": "Battery source",
-          "usage_mode": "Usage counting"
+          "usage_mode": "Usage counting",
+          "usage_entity": "Automatic usage sensor",
+          "usage_start_threshold": "Automatic start threshold",
+          "usage_min_active_seconds": "Minimum active time",
+          "usage_rearm_threshold": "Automatic re-arm threshold",
+          "usage_rearm_seconds": "Re-arm time"
         }
       }
     }
@@ -166,7 +183,8 @@
     "usage_mode": {
       "options": {
         "none": "Off",
-        "manual": "Manual +1 counting"
+        "manual": "Manual +1 counting",
+        "entity_activity": "Automatic from Home Assistant sensor"
       }
     }
   }
